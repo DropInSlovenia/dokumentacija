@@ -190,8 +190,6 @@ export default nextConfig;
 
 **Zakaj `output: standalone`?** Brez tega Next.js v Docker container skopira celotno `node_modules` mapo (pogosto večja od 500 MB). Z `standalone` outputom Next.js zgradi minimalen bundle (~10–30 MB) z vsem kar potrebuje za zagon — brez razvojnih odvisnosti. Container je manjši, hitrejši za prenos in hitrejši za zagon.
 
-Spremembo commitas in pushas na git.
-
 ---
 
 ### 1.2 Dockerfile — Frontend (Next.js)
@@ -575,16 +573,16 @@ _Avtor: Matija Dukarić, SSH ključi: Maj Donko, Luka Manfreda_
 
 **Kaj je virtualna naprava (VM)?** VM je računalnik ki teče kot program na Microsoftovem fizičnem strežniku. Dobimo lastni Linux operacijski sistem, IP naslov in popoln SSH dostop — enako kot fizičen strežnik, le da je virtualen.
 
-| Parameter      | Vrednost                | Zakaj                                                  |
-| -------------- | ----------------------- | ------------------------------------------------------ |
-| Subscription   | Azure for Students      | Brezplačna naročnina                                   |
-| Resource group | dropinslovenia-rg       | Logična skupina vseh virov projekta                    |
-| VM name        | dropinslovenia-vm       | Ime naše navidezne naprave                             |
-| Region         | West Europe             | Najbližji datacenter (Amsterdam)                       |
-| Image          | Ubuntu Server 24.04 LTS | Stabilna Linux distribucija, LTS = dolgotrajna podpora |
-| Size           | Standard B1s            | Vključeno v brezplačni tier: 1 vCPU, 1 GB RAM          |
-| Authentication | Password                | Enostavno za začetek, SSH ključe dodamo ročno          |
-| Public IP      | [VSTAVI IP]             | Javni naslov prek katerega dostopamo do VM             |
+| Parameter      | Vrednost                      | Zakaj                                                  |
+| -------------- | ----------------------------- | ------------------------------------------------------ |
+| Subscription   | Azure for Students            | Brezplačna naročnina                                   |
+| Resource group | DropInSlovenia_group_05191709 | Logična skupina vseh virov projekta                    |
+| VM name        | dropInSloveniaVM              | Ime naše navidezne naprave                             |
+| Region         | Austria East (Zone 2)         | Najbližji datacenter (Amsterdam)                       |
+| Image          | Ubuntu Server 24.04 LTS       | Stabilna Linux distribucija, LTS = dolgotrajna podpora |
+| Size           | Standard B2ts                 | Vključeno v brezplačni tier: 2 vCPU, 1 GB RAM          |
+| Authentication | Password                      | Enostavno za začetek, SSH ključe dodamo ročno          |
+| Public IP      | 68.210.138.63                 | Javni naslov prek katerega dostopamo do VM             |
 
 **Koraki v portalu:**
 
@@ -595,9 +593,9 @@ Pot: Virtual Machines → Create → Azure virtual machine
 
 1. Basics:
    - Subscription: Azure for Students
-   - Resource group: Create new → dropinslovenia-rg
-   - Virtual machine name: dropinslovenia-vm
-   - Region: (Europe) West Europe
+   - Resource group: Create new → DropInSlovenia_group_05191709
+   - Virtual machine name: dropInSloveniaVM
+   - Region: Austria East (Zone 2)
    - Image: Ubuntu Server 24.04 LTS - x64 Gen2
    - Size: Standard_B1s (klikni "See all sizes" če ni vidno)
    - Authentication type: Password
@@ -606,7 +604,7 @@ Pot: Virtual Machines → Create → Azure virtual machine
    - Public inbound ports: Allow selected → SSH (22)
 
 
-2. Disks: privzeto (Standard SSD)
+2. Disks: privzeto (Premium SSD)
 
 
 3. Networking: privzeto
@@ -615,15 +613,12 @@ Pot: Virtual Machines → Create → Azure virtual machine
 4. Review + Create → Create
 ```
 
-Deployment traja ~2 minuti. Po koncu: **Go to resource** → zabeležiš **Public IP address** (npr. `20.123.45.67`).
+Deployment traja ~2 minuti. Po koncu: **Go to resource** → zabeležiš **Public IP address** (npr. `68.210.138.63`).
 
 > [Opiši morebitne težave in kako si jih rešil]
 
-📸 _Slika: "Your deployment is complete" stran_
-`[VSTAVI SLIKO TUKAJ]`
-
 📸 _Slika: VM overview z vidnim Public IP_
-`[VSTAVI SLIKO TUKAJ]`
+<img width="1565" height="810" alt="image" src="https://github.com/user-attachments/assets/0686cb55-fa9a-405f-8af8-8878796fccd6" />
 
 ---
 
