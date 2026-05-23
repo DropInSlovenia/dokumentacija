@@ -261,10 +261,11 @@ docker run -p 3001:3001 dropinslovenia/frontend:test
 > [Opiši morebitne težave in kako si jih rešil]
 
 📸 _Slika: `docker build` uspešno zaključen za frontend_
-`[VSTAVI SLIKO TUKAJ]`
+<img width="1181" height="516" alt="image" src="https://github.com/user-attachments/assets/b3fbd0ca-ad26-4d33-81bd-02c0ce4833f1" />
+
 
 📸 _Slika: Frontend dostopen na http://localhost:3001_
-`[VSTAVI SLIKO TUKAJ]`
+<img width="2524" height="1291" alt="image" src="https://github.com/user-attachments/assets/c8860500-5cef-4a9d-9f73-aa2a39dcf418" />
 
 ---
 
@@ -731,28 +732,24 @@ Za vsako pravilo nastavimo:
 - **Priority:** npr. 1010, 1020, 1030, 1040 (vsak naslednji +10)
 
 > **Zakaj je privzeto vse zaprto?** Vsak odprt port je potencialna napadalna površina. Napadalec ki skenira internet bi na odprtem portu 3000 videl naš Node.js API in ga poskušal izkoristiti. Odpiramo samo kar nujno rabimo.
-
-📸 _Slika: NSG inbound rules z dodanimi pravili za porte 3000, 3001, 8080, 9000_
-`[VSTAVI SLIKO TUKAJ]`
-
+<img width="1326" height="873" alt="image" src="https://github.com/user-attachments/assets/a368408c-121b-4252-a631-b0b2ff0554b9" />
 ---
 
 ### 4.2 Kakšen tip diska je bil dodan navidezni napravi in kakšna je njegova kapaciteta?
 
 _Avtor: Maj Donko_
 
-**Pot v portalu:** VM → **Disks**
+**Pot v portalu:** VM -> Settings -> Disks
 
-Naši navidezni napravi je bil samodejno dodan OS disk tipa **Standard SSD (LRS)** s kapaciteto **30 GB**.
+Naši navidezni napravi je bil samodejno dodan OS disk tipa **Premium SSD LRS** s kapaciteto **30 GB**.
 
 **Razlaga:**
 
-- **Standard SSD** (v nasprotju s Standard HDD ali Premium SSD) — zmogljivost je med HDD in Premium SSD. Za naš primer (strežniška aplikacija z Docker) je popolnoma zadosten.
+- **Premium SSD** je osnovni SSD za večino trenutnih VM-ov na Azur-u
 - **LRS** (Locally Redundant Storage) pomeni da Azure podatke replicira **trikrat znotraj istega podatkovnega centra** v Amsterdamu. Če en fizični disk odpove, se podatki ohranijo. Ne varuje pred izpadom celotnega podatkovnega centra — za to bi potrebovali ZRS ali GRS.
 - **30 GB** je privzeta velikost OS diska za Ubuntu VM v Azure.
+<img width="1629" height="71" alt="image" src="https://github.com/user-attachments/assets/b6d7841d-78a8-448d-9eeb-748d24fc5bd1" />
 
-📸 _Slika: Disks sekcija v Azure portalu z vidnim tipom in kapaciteto diska_
-`[VSTAVI SLIKO TUKAJ]`
 
 ---
 
