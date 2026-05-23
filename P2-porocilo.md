@@ -205,10 +205,21 @@ Preden pišemo Dockerfile za frontend, moramo v `frontend/next.config.ts` dodati
 
 ```typescript
 // frontend/next.config.ts
-const nextConfig = {
-  output: 'standalone',  // OBVEZNO za Docker
-}
-export default nextConfig
+const nextConfig: NextConfig = {
+  output: "standalone",
+  async rewrites() {
+    const apiUrl = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
+
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${apiUrl}/api/:path*`,
+      },
+    ];
+  },
+};
+
+export default nextConfig;
 ```
 
 
@@ -238,37 +249,28 @@ Spremembo commitas in pushas na git.
 # FAZA 1: Build
 FROM node:20-alpine AS builder
 
-
 WORKDIR /app
-
-
-# Docker cache optimizacija: najprej samo package.json
-# Če se package.json ne spremeni, Docker preskoči npm ci pri naslednjem buildu
-COPY package*.json ./
-RUN npm ci
-
-
-COPY . .
-
 
 # Build argument — API URL se nastavi med docker build
 # Privzeta vrednost je za lokalni razvoj
 ARG NEXT_PUBLIC_API_URL=http://localhost:3000/api
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
+# Docker cache optimizacija: najprej samo package.json
+# Če se package.json ne spremeni, Docker preskoči npm ci pri naslednjem buildu
+COPY package*.json ./
+RUN npm ci
 
+COPY . .
 RUN npm run build
-
 
 # FAZA 2: Production runner (brez razvojnih orodij)
 FROM node:20-alpine AS runner
-
-
 WORKDIR /app
 
-
 ENV NODE_ENV=production
-
+ENV PORT=3001
+ENV HOSTNAME="0.0.0.0"
 
 # Kopiramo samo rezultat builda iz prve faze
 # --from=builder pomeni: vzemi iz faze z imenom "builder"
@@ -276,17 +278,10 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-
 EXPOSE 3001
-
-
-ENV PORT=3001
-ENV HOSTNAME="0.0.0.0"
-
 
 CMD ["node", "server.js"]
 ```
-
 
 **Test lokalno:**
 ```bash
