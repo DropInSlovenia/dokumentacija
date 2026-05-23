@@ -256,8 +256,6 @@ docker run -p 3001:3001 dropinslovenia/frontend:test
 
 **Potek gradnje:**
 
-> [Opiši morebitne težave in kako si jih rešil]
-
 📸 _Slika: `docker build` uspešno zaključen za frontend_
 <img width="1181" height="516" alt="image" src="https://github.com/user-attachments/assets/b3fbd0ca-ad26-4d33-81bd-02c0ce4833f1" />
 
