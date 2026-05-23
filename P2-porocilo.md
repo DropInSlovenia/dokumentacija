@@ -2,8 +2,7 @@
 ## DropInSlovenia
 
 
-**Skupina:** Matija Dukarić (vodja), Maj Donko, Luka Manfreda  
-**Datum oddaje:** ___________  
+**Skupina:** Matija Dukarić (vodja), Maj Donko, Luka Manfreda   
 **GitHub:** https://github.com/DropInSlovenia
 
 
@@ -36,9 +35,6 @@
 
 
 ## 0. Struktura projekta in repozitoriji
-
-
-*Avtor: Matija Dukarić*
 
 
 Naš projekt DropInSlovenia je razdeljen v **tri ločene GitHub repozitorije**, vsak za svoj servis:
@@ -93,62 +89,31 @@ Backend :3000  ──── MongoDB URI ────▶   MongoDB Atlas (oblak)
 
 *Avtor: Matija Dukarić*
 
+Za našo aplikacijo uporabljamo MongoDB Atlas, kar pomeni, da baza podatkov ni nameščena lokalno, ampak deluje v oblaku. To je prednost, ker lahko do baze dostopata tako lokalni razvoj kot tudi Azure VM, brez dodatnih namestitev MongoDB na posameznih računalnikih.
 
-Naša aplikacija ne sme imeti baze nameščene lokalno — uporabljamo **MongoDB Atlas**, ki je upravljana MongoDB baza v oblaku (brezplačni tier M0 je zadosten).
+Najprej sem na strani MongoDB Atlas ustvaril brezplačen račun in projekt z imenom DropInSlovenia. Nato sem ustvaril M0 free cluster v regiji Europe West, kar je dovolj za razvoj in manjše projekte.
 
+Za dostop do baze sem ustvaril uporabnika dropinslovenia-user z varnim geslom in mu dodelil pravice za branje in pisanje (ali admin dostop). Da omogočim povezavo iz različnih naprav, sem dovolil dostop iz vseh IP naslovov (0.0.0.0/0), kar je primerno za razvojno okolje.
 
-**Zakaj oblačna baza in ne lokalna?** Lokalna baza bi bila dostopna samo na eni napravi. Z Atlas bazo do nje dostopata tako lokalni razvoj kot Azure VM, brez da bi morali namestiti MongoDB kjerkoli.
+Po tem sem iz Atlas konzole pridobil connection string, ga prilagodil (vnesel geslo) in shranil v .env datoteko pod MONGODB_URI, ki ni del GIT repozitorija zaradi varnosti.
 
-
-**Koraki za nastavitev Atlas baze:**
-
-
-1. Odpri https://cloud.mongodb.com in ustvari brezplačni račun
-2. Ustvari nov projekt: **New Project** → ime `DropInSlovenia`
-3. Ustvari cluster: **Build a Database** → izberi **M0 Free** → Region: Europe West
-4. Ustvari database user:
-   - **Database Access** → **Add New Database User**
-   - Username: `dropinslovenia-user`
-   - Password: generiraj varno geslo in si ga shrani
-   - Role: **Atlas admin** (ali Read and write to any database)
-5. Dovoli dostop z vseh IP naslovov (za Azure VM z dinamičnim IP):
-   - **Network Access** → **Add IP Address** → **Allow Access from Anywhere** (`0.0.0.0/0`)
-   - Opomba: V produkciji bi omejili samo na IP Azure VM-ja
-6. Pridobi connection string:
-   - **Database** → **Connect** → **Drivers** → izberi Node.js
-   - Kopiraj connection string, izgleda tako:
-   ```
-   mongodb+srv://dropinslovenia-user:<password>@cluster0.xxxxx.mongodb.net/dropinslovenia
-   ```
-   - Zamenjaj `<password>` s pravim geslom in shrani v `.env`
-
-
-```env
-# .env (NIKOLI v git!)
-MONGODB_URI=mongodb+srv://dropinslovenia-user:GESLO@cluster0.xxxxx.mongodb.net/dropinslovenia
-```
-
-
-**Preveri delovanje:**
-```bash
-# Lokalno — testiraj da se backend poveže z Atlas
-cd backend
-node -e "
-const mongoose = require('mongoose');
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => { console.log('Atlas OK!'); process.exit(0); })
-  .catch(err => { console.error(err); process.exit(1); });
-"
-```
-
+Prikaz nastavljenega clusterja:
 
 ![MongoDB Atlas dashboard z ustvarjenim cluster-jem](slike/mongoAtlas.png) 
 
+Prikaz baze v uporabi:
+
+![MongoDB Atlas baza v uporabi](slike/baza.png) 
 
 
-📸 *Slika: Network Access z `0.0.0.0/0` pravilom*
-`[VSTAVI SLIKO TUKAJ]`
 
+Potrdilo delovanja MongoDb Atlas baze:
+
+![MongoDB v delovanju](slike/delovanjeBaze.png) 
+
+Task v jiri:
+
+![alt text](slike/taskMongo.png)
 
 ---
 
@@ -161,37 +126,9 @@ mongoose.connect(process.env.MONGODB_URI)
 
 *Avtor: Vsi*
 
+Potrdilo delujocega dockerja:
 
-Preden pišemo Dockerfila, mora vsak član imeti Docker nameščen lokalno.
-
-
-**Windows / Mac:** Prenesi in namesti **Docker Desktop** z https://www.docker.com/products/docker-desktop/
-
-
-**Linux (Ubuntu):**
-```bash
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-sudo usermod -aG docker $USER
-# Odjavi se in prijavi nazaj
-docker --version
-```
-
-
-**Preveri namestitev:**
-```bash
-docker --version
-# Docker version 24.x.x
-docker compose version
-# Docker Compose version v2.x.x
-docker run hello-world
-# Mora izpisati "Hello from Docker!"
-```
-
-
-**Kaj je Docker in zakaj ga uporabljamo?**
-Docker je orodje za pakiranje aplikacij v **containerje** — izolirane enote ki vsebujejo aplikacijo in vse njene odvisnosti (Node.js, Python, Java...). Container teče enako na vsakem računalniku, ne glede na operacijski sistem. Rešuje problem "pri meni dela, pri tebi ne" — v containerju je okolje vedno isto.
-
+![alt text](slike/dockerPotrdilo.png)
 
 ---
 
@@ -483,72 +420,68 @@ curl http://localhost:8080/events/maribor
 *Avtor: Matija Dukarić*
 
 
-**Kaj je Docker Compose?** `docker-compose.yml` je datoteka ki opisuje vse servise naše aplikacije in jih zažene skupaj z enim ukazom (`docker compose up`). Brez Compose bi morali za vsak container ročno pisati dolge `docker run` ukaze z vsemi parametri.
+V projektu uporabljamo kombiniran pristop k .env datotekam. Pri zagonu celotnega sistema preko Docker Compose uporabljamo eno centralno .env datoteko, ki zagotavlja enotne nastavitve za vse servise (backend, frontend in kotlin-server).
+
+Hkrati lahko vsak servis deluje tudi samostojno, zato ima lahko svoj lokalni .env, kar omogoča neodvisen razvoj in testiranje posameznih komponent.
+
+Tak pristop omogoča večjo fleksibilnost, lažji razvoj ter dosledno upravljanje občutljivih podatkov, ki se nikoli ne shranjujejo v Git.
 
 
-**Interno Docker omrežje:** Docker Compose avtomatično ustvari skupno interno omrežje za vse servise. Znotraj tega omrežja se servisi naslavljajo po **imenu servisa** (npr. `http://kotlin-server:8080`), ne po IP naslovu. To pomeni da backend v svoji kodi ne potrebuje vedeti IP naslova Kotlin strežnika — vedno bo dosegljiv na `http://kotlin-server:8080`.
 
-
-**`depends_on`** pove Dockerju vrstni red zaganjanja. Backend čaka da se kotlin-server zažene, ker ob zagonu morda takoj naredi klic nanj. Frontend čaka backend iz istega razloga. Opomba: `depends_on` čaka da se container **zažene**, ne da je aplikacija v njem **pripravljena** — za to bi potrebovali `healthcheck`.
-
-
-**`restart: unless-stopped`** poskrbi da se container avtomatično ponovno zažene po rebootu VM ali po morebitni napaki v aplikaciji. Ne bo se restartal samo če ga ročno ustaviš z `docker stop`.
-
-
-**`env_file: .env`** naloži environment spremenljivke iz `.env` datoteke. Ta datoteka je v `.gitignore` — nikoli ne gre v git repozitorij ker vsebuje gesla!
 
 
 ```yaml
-version: '3.8'
-
+version: '3.8'  # verzija Docker Compose formata
 
 services:
 
-
+  # =========================
+  # Kotlin backend / service
+  # =========================
   kotlin-server:
     build:
-      context: ./kotlin-server
-      dockerfile: Dockerfile
-    container_name: kotlin-server
+      context: ./PrincipiProjekt/desktopApp  # mapa kjer je Dockerfile za Kotlin aplikacijo
+      dockerfile: Dockerfile               # ime Dockerfile (lahko se izpusti, če je default)
+    container_name: kotlin-server         # ime containerja
     ports:
-      - "8080:8080"
-    env_file: .env
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/events/maribor"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - "8080:8080"                       # host:container port mapping
+    restart: unless-stopped               # restart če crasha ali ob rebootu
 
-
+  # =========================
+  # Node.js / backend API
+  # =========================
   backend:
     build:
-      context: ./backend
+      context: ./backendProjekt            # lokacija backend kode
       dockerfile: Dockerfile
     container_name: backend
     ports:
       - "3000:3000"
+    env_file: .env                        # naloži environment spremenljivke iz .env datoteke
     environment:
-      - MONGODB_URI=${MONGODB_URI}
-      - JWT_SECRET=${JWT_SECRET}
-      - KOTLIN_SERVER_URL=http://kotlin-server:8080
+      - MONGODB_URI=${MONGODB_URI}        # MongoDB connection string
+      - JWT_SECRET=${JWT_SECRET}          # secret za JWT avtentikacijo
+      - KOTLIN_SERVICE_URL=http://kotlin-server:8080  # interni Docker network URL za Kotlin service
     depends_on:
-      - kotlin-server
+      - kotlin-server                     # backend se zažene šele po kotlin-server
     restart: unless-stopped
 
-
+  # =========================
+  # Frontend (Next.js / React)
+  # =========================
   frontend:
     build:
-      context: ./frontend
+      context: ./webApp                   # lokacija frontend kode
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=http://localhost:3000/api
+        - NEXT_PUBLIC_API_URL=http://localhost:3000/api  # URL API-ja (viden v browserju)
     container_name: frontend
     ports:
       - "3001:3001"
     depends_on:
-      - backend
+      - backend                          # frontend čaka backend
     restart: unless-stopped
+
 ```
 
 
@@ -562,61 +495,60 @@ GOOGLE_PLACES_API_KEY=AIza...
 ```
 
 
-**Opomba o strukturi repozitorijev:** Ker imamo 3 ločene repozitorije, `docker-compose.yml` pričakuje da so vsi klonirani v isti nadrejeni mapi:
 
+Celoten sistem zaženemo z uporabo Docker Compose, ki avtomatsko zgradi in poveže vse tri servise (frontend, backend in kotlin-server). Z ukazom docker compose up --build se aplikacije zgradijo iz Dockerfile-ov in zaženejo kot ločeni containerji v skupnem Docker omrežju.
 
-```
-~/dropinslovenia/
-├── frontend/          ← git clone .../frontend
-├── backend/           ← git clone .../backend
-├── kotlin-server/     ← git clone .../kotlin-server
-├── docker-compose.yml ← ta datoteka
-└── .env               ← lokalne spremenljivke (v .gitignore)
-```
+Za lažje upravljanje lahko sistem zaženemo tudi v detached načinu (-d), kar omogoča delovanje v ozadju brez blokiranja terminala. Stanje containerjev preverimo z docker ps, loge posameznih servisov pa spremljamo z docker compose logs.
 
+Zaustavitev celotnega sistema izvedemo z ukazom docker compose down, ki ustavi in odstrani vse povezane containerje.
 
 **Zagon vsega skupaj:**
 ```bash
 # Zgradi vse slike in zaženi v ozadju
 docker compose up --build
 
-
 # Za zagon v ozadju (detached mode):
 docker compose up --build -d
 
-
 # Preveri status
 docker ps
-
-
-# Oglej loge
-docker compose logs --tail=50
-
 
 # Ustavi vse
 docker compose down
 ```
 
+Prikaz repozitorija, kjer so not vidni kotlin streznik, fronent, backend,  .env, in yaml:
 
-**Razlaga `--build`:** Ta zastavica pove Docker Compose da naj vedno znova zgradi slike iz Dockerfilov. Brez nje bi Docker Compose uporabil že obstoječo sliko (cached) tudi če si spremenil kodo. Ob prvem zagonu je `--build` vedno potreben.
+![alt text](slike/repoDokaz.png)
 
+Uporaba ukaza `docker compose up --build`:
 
-📸 *Slika: `docker compose up --build` — logi vseh 3 servisov*
-`[VSTAVI SLIKO TUKAJ]`
-
-
-📸 *Slika: `docker ps` — vsi 3 containerji z statusom `Up`*
-`[VSTAVI SLIKO TUKAJ]`
+![alt text](slike/dokazUk.png)
 
 
-📸 *Slika: Frontend v brskalniku na http://localhost:3001*
-`[VSTAVI SLIKO TUKAJ]`
+Uporaba ukaza `docker ps`:
+
+![alt text](slike/dockerPs.png)
 
 
-📸 *Slika: Kotlin server API klic na http://localhost:8080/events/maribor*
-`[VSTAVI SLIKO TUKAJ]`
+Delujoc backend (REST API):
+
+![alt text](slike/backendRest.png)
 
 
+Delujoc fronend (ni še popolnoma končan):
+
+![alt text](slike/frontendDokaz.png)
+
+
+
+
+
+
+
+Slika jira taska:
+
+![alt text](slike/yamlTask.png)
 ---
 
 
@@ -624,30 +556,11 @@ docker compose down
 *Avtor: Matija Dukarić*
 
 
-**Kaj je Azure?** Microsoft Azure je platforma za računalništvo v oblaku — ponuja virtualne strežnike, baze, omrežja in stotine drugih storitev. Mi bomo uporabili **virtualni strežnik (VM)** na katerem bomo poganjali naše Docker containerje.
+Na računu vodje skupine smo uspešno aktivirali Azure for Students naročnino. Postopek je potekal preko Microsoft Azure portala, kjer smo se prijavili s študentskim e-mail naslovom in opravili verifikacijo statusa študenta. Po uspešni aktivaciji smo pridobili dostop do brezplačnih Azure storitev, vključno z dobroimetjem in brezplačnimi urami virtualnega strežnika, brez vnosa kreditne kartice.
 
+Jira task:
 
-**Azure for Students** je Microsoftov program ki študentom brezplačno ponuja:
-- 100 € dobroimetja za katero koli Azure storitev
-- 750 ur/mesec virtualnega strežnika B1s za 12 mesecev (brezplačno brez porabe dobroimetja)
-- Brez kreditne kartice — samo studenstki email
-
-
-**Koraki registracije:**
-1. Odpri https://azure.microsoft.com/en-us/free/students/
-2. Klikni **Start free**
-3. Prijavi se s **študentskim e-mailom** (`xx1234@student.um.si`)
-4. Verifikacija: Microsoft preveri da email pripada šolski instituciji — sledi navodilom
-5. Nikjer ne vnašaj kreditne kartice — ni zahtevano
-6. Po uspešni registraciji se prikaže Azure portal s "Azure for Students" naročnino
-
-
-> [Opiši morebitne težave pri verifikaciji in kako si jih rešil]
-
-
-📸 *Slika: Azure portal po uspešni prijavi — viden "Azure for Students" subscription*
-`[VSTAVI SLIKO TUKAJ]`
-
+![alt text](slike/vmJira.png)
 
 ---
 
@@ -659,64 +572,31 @@ docker compose down
 ### 3.1 Parametri VM
 
 
-**Kaj je virtualna naprava (VM)?** VM je računalnik ki teče kot program na Microsoftovem fizičnem strežniku. Dobimo lastni Linux operacijski sistem, IP naslov in popoln SSH dostop — enako kot fizičen strežnik, le da je virtualen.
 
+| Parameter | Vrednost |
+|-----------|----------|
+| Subscription | Azure for Students |
+| Resource group | DropInSlovenia_group_05191709 |
+| VM name | dropinslovenia-vm |
+| Region | Austria East (Zone 2) |
+| Image | Ubuntu Server 24.04 LTS |
+| Size | Standard B2ts v2 (2 vCPU, 1 GiB RAM) |
+| Authentication | Password |
+| Public IP | DA |
 
-| Parameter | Vrednost | Zakaj |
-|-----------|----------|-------|
-| Subscription | Azure for Students | Brezplačna naročnina |
-| Resource group | dropinslovenia-rg | Logična skupina vseh virov projekta |
-| VM name | dropinslovenia-vm | Ime naše navidezne naprave |
-| Region | West Europe | Najbližji datacenter (Amsterdam) |
-| Image | Ubuntu Server 24.04 LTS | Stabilna Linux distribucija, LTS = dolgotrajna podpora |
-| Size | Standard B1s | Vključeno v brezplačni tier: 1 vCPU, 1 GB RAM |
-| Authentication | Password | Enostavno za začetek, SSH ključe dodamo ročno |
-| Public IP | [VSTAVI IP] | Javni naslov prek katerega dostopamo do VM |
+![alt text](slike/parametri.png)
 
+![alt text](slike/vmKorak.png)
 
-**Koraki v portalu:**
+### Težave:
 
+Pri ustvarjanju VM-ja smo naleteli na omejitve, zato nismo mogli popolnoma slediti zahtevam. Region West Europe ni bil na voljo za naše naročnino Azure for Students, zato smo izbrali Austria East (Zone 2), ki je bila najbližja razpoložljiva možnost.
+Posledično tudi velikosti Standard B1s ni bilo mogoče izbrati, saj ta velikost v regiji Austria East ni bila na voljo. Izbrali smo Standard B2ts v2 (2 vCPU, 1 GiB RAM), ki je bila najbližja ustrezna alternativa s podobno količino pomnilnika.
+Vse ostale nastavitve — Ubuntu Server 24.04 LTS, Azure for Students naročnina, avtentikacija z geslom in odprti SSH vrata — smo ohranili enake, kot je bilo zahtevano.
 
-```
-Portal: https://portal.azure.com
-Pot: Virtual Machines → Create → Azure virtual machine
+Jira task:
 
-
-1. Basics:
-   - Subscription: Azure for Students
-   - Resource group: Create new → dropinslovenia-rg
-   - Virtual machine name: dropinslovenia-vm
-   - Region: (Europe) West Europe
-   - Image: Ubuntu Server 24.04 LTS - x64 Gen2
-   - Size: Standard_B1s (klikni "See all sizes" če ni vidno)
-   - Authentication type: Password
-   - Username: azureuser
-   - Password: [dolgo geslo, si ga zapomni!]
-   - Public inbound ports: Allow selected → SSH (22)
-
-
-2. Disks: privzeto (Standard SSD)
-
-
-3. Networking: privzeto
-
-
-4. Review + Create → Create
-```
-
-
-Deployment traja ~2 minuti. Po koncu: **Go to resource** → zabeležiš **Public IP address** (npr. `20.123.45.67`).
-
-
-> [Opiši morebitne težave in kako si jih rešil]
-
-
-📸 *Slika: "Your deployment is complete" stran*
-`[VSTAVI SLIKO TUKAJ]`
-
-
-📸 *Slika: VM overview z vidnim Public IP*
-`[VSTAVI SLIKO TUKAJ]`
+![alt text](slike/vmJira2.png)
 
 
 ---
