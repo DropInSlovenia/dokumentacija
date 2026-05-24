@@ -3,31 +3,14 @@
 ## DropInSlovenia
 
 **Skupina:** Matija Dukarić (vodja), Maj Donko, Luka Manfreda   
-**Skupina:** Matija Dukarić (vodja), Maj Donko, Luka Manfreda  
-**Datum oddaje:** \***\*\_\_\_\*\***  
+**Skupina:** Matija Dukarić (vodja), Maj Donko, Luka Manfreda   
 **GitHub:** https://github.com/DropInSlovenia
 
 ---
 
-## Razdelitev nalog
+## Vodenje sprinta
 
-| Task    | Opis                              | Assignee                      |
-| ------- | --------------------------------- | ----------------------------- |
-| TASK-01 | `output: standalone` v Next.js    | Maj Donko                     |
-| TASK-02 | Dockerfile — Frontend             | Maj Donko                     |
-| TASK-03 | Dockerfile — Backend              | Luka Manfreda                 |
-| TASK-04 | Dockerfile — Kotlin server        | Luka Manfreda                 |
-| TASK-05 | docker-compose.yml                | Matija Dukarić                |
-| TASK-06 | Lokalni Docker test (vsi servisi) | Vsi                           |
-| TASK-07 | Azure Student račun               | Matija Dukarić                |
-| TASK-08 | Ustvaritev Linux VM               | Matija Dukarić                |
-| TASK-09 | SSH ključi in dostop              | Vsi                           |
-| TASK-10 | Port forwarding — dokumentacija   | Maj Donko                     |
-| TASK-11 | Tip in kapaciteta diska           | Maj Donko                     |
-| TASK-12 | Poraba virov v naročnini          | Luka Manfreda                 |
-| TASK-13 | Namestitev Dockerja + swap na VM  | Matija Dukarić                |
-| TASK-14 | Deploy aplikacije na VM           | Luka Manfreda                 |
-| TASK-15 | Pisanje poročila P2               | Matija Dukarić (koordinacija) |
+
 
 ---
 
@@ -38,9 +21,9 @@ Naš projekt DropInSlovenia je razdeljen v **tri ločene GitHub repozitorije**, 
 
 | Repozitorij                               | Tehnologija       | Namen                          |
 | ----------------------------------------- | ----------------- | ------------------------------ |
-| `github.com/DropInSlovenia/frontend`      | Next.js (React)   | Uporabniški vmesnik            |
+| `github.com/DropInSlovenia/webApp`        | Next.js (React)   | Uporabniški vmesnik            |
 | `github.com/DropInSlovenia/backend`       | Node.js / Express | REST API, MongoDB komunikacija |
-| `github.com/DropInSlovenia/kotlin-server` | Kotlin / Ktor     | Scraping in zunanji podatki    |
+| `github.com/DropInSlovenia/desktopApp`    | Kotlin / Ktor     | Scraping in zunanji podatki    |
 
 **Kako servisi komunicirajo med seboj:**
 
@@ -62,9 +45,7 @@ Uporabnik (brskalnik)
 Backend :3000  ──── MongoDB URI ────▶   MongoDB Atlas (oblak)
 ```
 
-**Zakaj ločeni repozitoriji?** Vsak servis ima svojo ekipo (v realnem svetu), svojo tehnologijo in svoj deployment cikel. Z ločenimi repozitoriji se Docker slika za frontend zgradi samo ko se frontend koda spremeni — ne ob vsaki spremembi backenda.
-
-**Kje je `docker-compose.yml`?** Za lokalni razvoj in za Azure VM imamo `docker-compose.yml` ali v četrtem infrastructure repozitoriju, ali pa ga ročno ustvarimo na VM. Ta datoteka poveže vse tri servise v enotno aplikacijo.
+**Zakaj ločeni repozitoriji?** Vsak servis ima svojo vlogo, svojo tehnologijo in svoj deployment cikel. Recimo backend in kotlin streznik delujeta kot celota in sta neodvisna of fontenda ali namize aplikacije, saj gre za REST APi. 
 
 ---
 
@@ -374,70 +355,135 @@ Tak pristop omogoča večjo fleksibilnost, lažji razvoj ter dosledno upravljanj
 
 
 
-
-
 ```yaml
-version: '3.8'  # verzija Docker Compose formata
-
 services:
 
-  # =========================
-  # Kotlin backend / service
-  # =========================
+  # Kotlin service for desktop/microservice logic
   kotlin-server:
     build:
-      context: ./PrincipiProjekt/desktopApp  # mapa kjer je Dockerfile za Kotlin aplikacijo
-      dockerfile: Dockerfile               # ime Dockerfile (lahko se izpusti, če je default)
-    container_name: kotlin-server         # ime containerja
-    ports:
-      - "8080:8080"                       # host:container port mapping
-    restart: unless-stopped               # restart če crasha ali ob rebootu
+      # Path to Kotlin project
+      context: ./PrincipiProjekt/desktopApp
+      dockerfile: Dockerfile
+    container_name: kotlin-server
 
-  # =========================
-  # Node.js / backend API
-  # =========================
+    # Expose Kotlin API on port 8080
+    ports:
+      - "8080:8080"
+
+    # Restart container automatically if it crashes
+    restart: unless-stopped
+
+  # Main backend service (Node.js/Express)
   backend:
     build:
-      context: ./backendProjekt            # lokacija backend kode
+      # Path to backend source code
+      context: ./backendProjekt
       dockerfile: Dockerfile
     container_name: backend
+
+    # Backend API available on localhost:3000
     ports:
       - "3000:3000"
-    env_file: .env                        # naloži environment spremenljivke iz .env datoteke
+
+    # Load environment variables from .env file
+    env_file: .env
+
     environment:
-      - MONGODB_URI=${MONGODB_URI}        # MongoDB connection string
-      - JWT_SECRET=${JWT_SECRET}          # secret za JWT avtentikacijo
-      - KOTLIN_SERVICE_URL=http://kotlin-server:8080  # interni Docker network URL za Kotlin service
+      # MongoDB connection string
+      - MONGODB_URI=${MONGODB_URI}
+
+      # Secret key for JWT authentication
+      - JWT_SECRET=${JWT_SECRET}
+
+      # Internal Docker network URL for Kotlin service
+      - KOTLIN_SERVICE_URL=http://kotlin-server:8080
+
+    # Start Kotlin service before backend
     depends_on:
-      - kotlin-server                     # backend se zažene šele po kotlin-server
+      - kotlin-server
+
+    # Keep backend running unless manually stopped
     restart: unless-stopped
 
-  # =========================
-  # Frontend (Next.js / React)
-  # =========================
+  # Frontend service (Next.js application)
   frontend:
     build:
-      context: ./webApp                   # lokacija frontend kode
-      dockerfile: Dockerfile
+      # Path to frontend project
+      context: ./webApp
+
+      # Dockerfile location inside frontend folder
+      dockerfile: frontend/Dockerfile
+
       args:
-        - NEXT_PUBLIC_API_URL=http://localhost:3000/api  # URL API-ja (viden v browserju)
+        # Public API URL used during frontend build
+        - NEXT_PUBLIC_API_URL=http://localhost:3000
+
     container_name: frontend
+
+    # Frontend accessible on localhost:3001
     ports:
       - "3001:3001"
-    depends_on:
-      - backend                          # frontend čaka backend
-    restart: unless-stopped
 
+    environment:
+      # Internal backend URL inside Docker network
+      - API_URL=http://backend:3000
+
+    # Backend must start before frontend
+    depends_on:
+      - backend
+
+    # Restart frontend automatically if needed
+    restart: unless-stopped
 ```
 
 `.env` datoteka (v istem folderju kot `docker-compose.yml`, **nikoli v git**):
 
 ```env
-MONGODB_URI=mongodb+srv://dropinslovenia-user:GESLO@cluster0.xxxxx.mongodb.net/dropinslovenia
-JWT_SECRET=nek_dolg_nakljucen_string_tukaj_vsaj_32_znakov
-GOOGLE_PLACES_API_KEY=AIza...
-```
+# FRONTEND (Next.js)
 
+NEXT_PUBLIC_API_URL=http://localhost:3000
+NEXT_PUBLIC_WS_URL=ws://localhost:3000
+
+
+#  BACKEND (Node API)
+
+PORT=3000
+
+# MongoDB Atlas
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>?retryWrites=true&w=majority
+
+MONGO_USER=
+MONGO_KEY=
+
+# JWT avtentikacija
+JWT_SECRET=replace-with-strong-secret
+JWT_EXPIRES_IN=1d
+
+# povezava na Kotlin servis ( v Dockerju NE localhost)
+KOTLIN_SERVICE_URL=http://localhost:8080
+
+# CORS pravila
+CORS_ORIGIN=http://localhost:3001
+
+# rate limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX=100
+
+# dodatni tokeni
+ACCESS_TOKEN_SECRET=
+REFRESH_TOKEN_SECRET=
+
+
+# KOTLIN SERVER
+
+GOOGLE_PLACES_KEY=
+
+#  v Dockerju mora biti internal URL
+API_BASE_URL=http://kotlin-server:8080/
+
+AUTH_EMAIL=
+AUTH_PASSWORD=
+```
 
 Celoten sistem zaženemo z uporabo Docker Compose, ki avtomatsko zgradi in poveže vse tri servise (frontend, backend in kotlin-server). Z ukazom docker compose up --build se aplikacije zgradijo iz Dockerfile-ov in zaženejo kot ločeni containerji v skupnem Docker omrežju.
 
@@ -483,12 +529,6 @@ Delujoc backend (REST API):
 Delujoc fronend (ni še popolnoma končan):
 
 ![alt text](slike/frontendDokaz.png)
-
-
-
-
-
-
 
 Slika jira taska:
 
@@ -544,71 +584,126 @@ Jira task:
 
 
 ### 3.2 SSH dostop vseh članov
-
-**Kaj je SSH?** SSH (Secure Shell) je protokol za varno oddaljeno upravljanje strežnikov prek ukazne vrstice. Z njim se povežemo na Azure VM kot da bi sedeli pred njim.
-
-**Javni/zasebni ključ:** SSH deluje na principu para ključev. **Zasebni ključ** ostane na tvojem računalniku (nikoli ga ne deli z nikomer). **Javni ključ** dodaš na strežnik. Ob prijavi strežnik preveri ali imaš ustrezni zasebni ključ — brez gesla. To je varnejše od gesla ker geslo je mogoče uganjati (brute force), matematičnega ključa pa ne.
-
-**`authorized_keys`** je datoteka na strežniku ki vsebuje seznam vseh javnih ključev katerim je dostop dovoljen. Vsaka vrstica je en ključ — enega na člana.
-
-**Korak 1 — Vsak član na svojem računalniku generira SSH ključ:**
-
+ 
+---
+ 
+### Kaj je SSH in zakaj ključi?
+ 
+**SSH** (Secure Shell) je protokol za varno oddaljeno upravljanje strežnikov prek ukazne vrstice. Z njim se povežemo na Azure VM kot da bi sedeli pred njim — iz kateregakoli računalnika, kjerkoli na svetu.
+ 
+**Zakaj ključi namesto gesla?**
+ 
+SSH podpira dve metodi prijave:
+- **Geslo** — preprosto, ampak ranljivo. Napadalci lahko avtomatsko preizkušajo tisoče gesel na sekundo (brute force napad).
+- **Par ključev** — varnejše. Temelji na matematičnem problemu ki ga z današnjo računalniško močjo ni mogoče rešiti v razumnem času.
+Par ključev sestavljata:
+- **Zasebni ključ** (`id_ed25519`) — ostane **samo na tvojem računalniku**, nikoli ga ne deli z nikomer, nikamor ne nalagaj
+- **Javni ključ** (`id_ed25519.pub`) — tega daš na strežnik; iz njega ni mogoče izpeljati zasebnega ključa
+Ob prijavi strežnik preveri: *"Imaš zasebni ključ ki ustreza javnemu ključu ki sem ga shranil?"* Če da — dostop dovoljen, brez gesla.
+ 
+**`authorized_keys`** je datoteka na strežniku ki vsebuje seznam vseh dovoljenih javnih ključev. Vsaka vrstica je en ključ — po en na člana ekipe.
+ 
+---
+ 
+### Korak 1 — Vsak član je generiral SSH ključ na svojem računalniku
+ 
+#### Windows
+ 
+Odpremo **PowerShell**:
+ 
 ```bash
-# Generiramo SSH ključ (ed25519 je modern in varen algoritem)
 ssh-keygen -t ed25519 -C "ime.priimek@student.um.si"
-# Pritisni Enter za privzeto lokacijo (~/.ssh/id_ed25519)
-# Passphrase: po želji (Enter za prazno)
+```
 
+- `-t ed25519` — algoritem za generiranje ključa (ed25519 je moderen, hiter in varen)
+- `-C "..."` — komentar/oznaka ključa, ponavadi email; pomaga pri razlikovanju ključev
 
-# Prikažemo javni ključ in ga pošljemo Matiji (npr. prek Discord/WhatsApp)
+#### macOS / Linux
+ 
+Odpremo terminal in vpišemo isti ukaz:
+ 
+```bash
+ssh-keygen -t ed25519 -C "ime.priimek@student.um.si"
+```
+ 
+ 
+#### Prikažemo javni ključ
+ 
+Ko je ključ generiran, prikažemo javni ključ:
+ 
+**Windows (PowerShell):**
+```bash
+type C:\Users\TvojeIme\.ssh\id_ed25519.pub
+```
+ 
+**macOS / Linux:**
+```bash
 cat ~/.ssh/id_ed25519.pub
-# Izpis (primer):
-# ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... ime.priimek@student.um.si
 ```
+ 
+Izpis izgleda takole (primer):
+```
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAbCdEfGhIjK... ime.priimek@student.um.si
+```
+ 
+---
+ 
+### Korak 2 — Dodajanje javnih ključev od vseh 3 članov na VM:
+ 
+ 
+#### 2.1 — Prva prijava na VM z geslom
+ 
+Ker ključev še nismo dodali, se prvič prijavimo z geslom ki smo ga nastavili ob ustvarjanju VM-ja:
 
-**Korak 2 — Matija na VM doda ključe vseh treh članov:**
+![alt text](slike/prijavaGeslo.png)
+ 
 
+Ob prvič vpraša:
+```
+Are you sure you want to continue connecting (yes/no/[fingerprint])?
+```
+Vpišemo `yes` in Enter. Nato vpišemo geslo VM-ja.
+ 
+#### 2.2 — Ustvarimo `.ssh` mapo z ustreznimi pravicami
+ 
+![alt text](slike/chmod.png)
+
+`mkdir -p` ustvari mapo `~/.ssh` (če že obstaja, ne vrne napake).
+`chmod 700` pomeni: **samo lastnik** lahko bere, piše in odpira mapo. SSH bo zavrnil prijavo s ključem če ima mapa preveč odprte pravice — to je varnostna zahteva SSHja.
+ 
+#### 2.3 — Dodamo javne ključe vseh članov
+ 
 ```bash
-# Prva prijava z geslom (ki smo ga nastavili pri ustvaritvi VM)
-ssh azureuser@<PUBLIC_IP>
-
-
-# Ustvari .ssh mapo z ustreznimi pravicami
-mkdir -p ~/.ssh
-chmod 700 ~/.ssh
-# (700 = samo lastnik ima dostop)
-
-
-# Odpri authorized_keys in prilepi ključe vseh treh
 nano ~/.ssh/authorized_keys
-# V urejevalnik prilepi vse tri javne ključe, vsak v svojo vrstico:
-# ssh-ed25519 AAAAC3... matija@student.um.si
-# ssh-ed25519 AAAAC3... maj@student.um.si
-# ssh-ed25519 AAAAC3... luka@student.um.si
-# Shrani: Ctrl+X, Y, Enter
-
-
-# Nastavi pravice (OBVEZNO — SSH zavrne prijavo če so pravice napačne)
-chmod 600 ~/.ssh/authorized_keys
-# (600 = samo lastnik lahko bere in piše)
 ```
-
-**Korak 3 — Vsak testira SSH dostop brez gesla:**
-
+ 
+`nano` je preprost urejevalnik besedil v terminalu. Odpre se prazna datoteka. Vanjo prilepimo javne ključe vseh treh članov — vsak v svojo vrstico:
+ 
+```
+ssh-ed25519 AAAAC3... matija@student.um.si
+ssh-ed25519 AAAAC3... maj@student.um.si
+ssh-ed25519 AAAAC3... luka@student.um.si
+```
+ 
+#### 2.4 — Nastavimo pravice na `authorized_keys`
+ 
 ```bash
-ssh azureuser@<PUBLIC_IP>
-# Mora se prijaviti BREZ gesla (samo s ključem)
-# Pričakovana ukazna vrstica: azureuser@dropinslovenia-vm:~$
+chmod 600 ~/.ssh/authorized_keys
 ```
+ 
+`chmod 600` pomeni: **samo lastnik** lahko bere in piše datoteko. SSH bo **zavrnil prijavo s ključem** če ima datoteka preveč odprte pravice (npr. 644 ali 777) — to je stroga varnostna zahteva.
+ 
+ 
+### Korak 3 — Vsak član testira prijavo brez gesla
+ 
+Ko so vsi kljuci dodani, vsak član na svojem računalniku preizkusi prijavo.
+Tokrat **ne vpraša za geslo** — prijava mora uspeti samodejno s ključem. Uspešna prijava izgleda tako:
+ 
+![alt text](slike/brezPrijave.png)
 
-📸 _Slika: Matija — uspešna SSH prijava na VM_
-`[VSTAVI SLIKO TUKAJ]`
+Jira task:
 
-📸 _Slika: Maj — uspešna SSH prijava na VM_
-`[VSTAVI SLIKO TUKAJ]`
-
-📸 _Slika: Luka — uspešna SSH prijava na VM_
-`[VSTAVI SLIKO TUKAJ]`
+![alt text](slike/jirat2.png)
 
 ---
 
@@ -685,82 +780,67 @@ _Luka Manfreda_
 ---
 
 ## 5. Vpostavitev Dockerja na Azure VM
-
+ 
 ### 5.1 Namestitev Dockerja in swap
-
+ 
 _Avtor: Matija Dukarić_
+ 
+---
+ 
+### Korak 1: Prijava na VM prek SSH
+ 
+To je spet isti postopek kot prej:
 
-**Zakaj swap?** Azure B1s VM ima samo **1 GB RAMa**. Naša aplikacija teče v treh containerjih skupaj:
+![alt text](slike/brezPrijave.png)
+ 
+### Korak 2: Posodobitev sistema
+ 
+Ko smo prijavljeni, najprej posodobimo seznam paketov in namestimo najnovejše varnostne popravke. To je dobra praksa pred vsako namestitvijo:
+![alt text](slike/posodobitev.png)
+ 
+- `apt update` — prenese aktualni seznam razpoložljivih paketov
+- `apt upgrade -y` — namesti vse posodobitve (`-y` samodejno potrdi vse)
+ 
+---
+ 
+### Korak 3: Namestitev Dockerja
+ 
+Docker nameščamo z uradnim skriptom ki ga pripravi Docker sam. Skript samodejno zazna operacijski sistem, doda Docker repozitorij in namesti Docker Engine.
+ 
 
-- Next.js frontend: ~150–200 MB
-- Node.js backend: ~100 MB
-- Kotlin JVM: ~256 MB (omejeno z `-Xmx256m`)
-- Ubuntu OS: ~200 MB
+Prenesemo in namestimo namestitveno skripo:
 
-Skupaj: ~700–800 MB samo za aplikacijo. Ko Docker gradi slike ob zagonu, poraba začasno naraste nad 1 GB — VM bi "zmrznil". Dodamo **2 GB swap datoteko** — del diska ki ga OS uporablja kot razširitev RAMa (počasnejši od pravega RAMa a dovolj za naš primer).
+ ![alt text](slike/names.png)
 
-```bash
-# Prijava na VM
-ssh azureuser@<PUBLIC_IP>
+ 
+#### Preverimo namestitev
+ 
+![alt text](slike/namestitev.png)
+ 
+---
+ 
+### Korak 4: Dodajanje swap datoteke
+ 
+**Zakaj swap?** Naš Azure Standard B2ts v2 VM ima samo **1 GiB RAMa**. Naša aplikacija teče v treh containerjih skupaj:
+ 
+| Komponenta | Poraba RAMa |
+|---|---|
+| Next.js frontend | ~150–200 MB |
+| Node.js backend | ~100 MB |
+| Kotlin JVM | ~256 MB (omejeno z `-Xmx256m`) |
+| Ubuntu OS | ~200 MB |
+| **Skupaj** | **~700–800 MB** |
+ 
+Ko Docker gradi slike ob zagonu, poraba začasno naraste nad 1 GB — VM bi "zmrznil" ali se sesul. Rešitev je **swap datoteka** — rezerviran del diska, ki ga operacijski sistem začasno uporablja kot razširitev RAMa. Je počasnejši od pravega RAMa, a za naš primer povsem zadostuje.
+ 
+> **Opomba:** Originalna navodila predvidevajo Standard B1s (1 vCPU, 1 GB RAM), mi pa smo zaradi problemov (ki smo jih opisali pri namestitvi) naročnine Azure for Students izbrali Standard B2ts v2 (2 vCPU, 1 GiB RAM). Količina RAMa je enaka, zato so vsi koraki — vključno z dodajanjem swapa — identični.
+ 
+# Ustvarimo 2 GB swap datoteko, nastavimo pravice, inicializiramo in aktiviramo jo ter jo dodamo v /etc/fstab za trajno delovanje
 
-
-# Posodobitev sistema (vedno najprej posodobi)
-sudo apt update && sudo apt upgrade -y
-
-
-# Namestitev Dockerja z uradnim skriptom
-# (skript samodejno doda Docker apt repozitorij in namesti Docker Engine)
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-
-
-# Dodamo trenutnega uporabnika v docker skupino
-# (brez tega bi morali pisati "sudo docker" pred vsakim ukazom)
-sudo usermod -aG docker $USER
-
-
-# POMEMBNO: Odjavimo se in prijavimo nazaj da group membership velja
-exit
-ssh azureuser@<PUBLIC_IP>
-
-
-# Preverimo namestitev
-docker --version
-docker compose version
-```
-
-**Dodamo swap (OBVEZNO za B1s VM):**
-
-```bash
-# Ustvarimo 2 GB swap datoteko na disku
-sudo fallocate -l 2G /swapfile
-
-
-# Nastavimo pravice (samo root sme brati swap)
-sudo chmod 600 /swapfile
-
-
-# Inicializiramo swap datoteko
-sudo mkswap /swapfile
-
-
-# Aktiviramo swap
-sudo swapon /swapfile
-
-
-# Dodamo v /etc/fstab da swap ostane aktiven po vsakem rebootu VM
-echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
-
-
-# Preverimo — mora pokazati Swap: 2.0G
-free -h
-```
-
-📸 _Slika: `docker --version` in `docker compose version` na VM_
-`[VSTAVI SLIKO TUKAJ]`
-
-📸 _Slika: `free -h` — vidni RAM in swap_
-`[VSTAVI SLIKO TUKAJ]`
+![alt text](slike/swap.png)
+ 
+ Jira task:
+ ![alt text](slike/jirat.png)
 
 ---
 
