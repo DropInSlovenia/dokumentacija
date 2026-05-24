@@ -119,7 +119,7 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 ```
 
-**Zakaj `output: standalone`?** Brez tega Next.js v Docker container skopira celotno `node_modules` mapo (pogosto večja od 500 MB). Z `standalone` outputom Next.js zgradi minimalen bundle (~10–30 MB) z vsem kar potrebuje za zagon — brez razvojnih odvisnosti. Container je manjši, hitrejši za prenos in hitrejši za zagon.
+**`output: standalone`?** Brez tega Next.js v Docker container skopira celotno `node_modules` mapo (pogosto večja od 500 MB). Z `standalone` outputom Next.js zgradi minimalen bundle (~10–30 MB) z vsem kar potrebuje za zagon — brez razvojnih odvisnosti. Container je manjši, hitrejši za prenos in hitrejši za zagon.
 
 ---
 
@@ -127,9 +127,7 @@ export default nextConfig;
 
 _Avtor: Maj Donko_
 
-**Kaj je Dockerfile?** Dockerfile je tekstovna datoteka z navodili za gradnjo Docker slike. Vsaka vrstica je en korak. Docker izvede korake od zgoraj navzdol in shrani rezultat kot sliko (image), ki jo nato zaženemo kot container.
-
-**Multi-stage build** je tehnika kjer Docker zgradi sliko v več fazah — vsaka faza ima svojo `FROM` direktivo. V **builder** fazi imamo vsa razvojna orodja in izvajamo `npm run build`. V **runner** fazi pa vzamemo samo tisto kar je potrebno za zagon. Iz builder faze v runner fazo prenesemo samo rezultat builda — brez `node_modules`, brez izvorne kode. Rezultat je majhen produkcijski container.
+V **builder** fazi imamo vsa razvojna orodja in izvajamo `npm run build`. V **runner** fazi pa vzamemo samo tisto kar je potrebno za zagon. Iz builder faze v runner fazo prenesemo samo rezultat builda — brez `node_modules`, brez izvorne kode. Rezultat je majhen produkcijski container.
 
 `NEXT_PUBLIC_API_URL` se nastavi med buildom kot build argument (`ARG`). To je URL do Node.js backend API-ja. Ko gradimo za Azure VM, ga nastavimo na javni IP VM-ja. Next.js ta URL **vtisne v JavaScript bundle med kompilacijo** — zato ga moramo podati med `docker build`, ne ob zagonu containerja.
 
@@ -232,7 +230,6 @@ CMD ["npm", "start"]
 - `COPY . .` -> kopira celotno izvorno kodo v kontejner
 - `EXPOSE 3000` -> Pove, da aplikacija uporablja port 3000.
 - `CMD ["npm", "start"]` -> Privzeti ukaz ob zagonu kontejnerja: zazene npm start
-  **Opomba:** Če vaš backend vstopno točko imenuje drugače (npr. `index.js` ali `app.js`), prilagodi zadnjo vrstico CMD ustrezno.
 
 **Lokalno se to testira tako**
 
@@ -350,81 +347,44 @@ Tak pristop omogoča večjo fleksibilnost, lažji razvoj ter dosledno upravljanj
 
 ```yaml
 services:
-  # Kotlin service for desktop/microservice logic
   kotlin-server:
     build:
-      # Path to Kotlin project
-      context: ./PrincipiProjekt/desktopApp
+      context: ./desktopApp
       dockerfile: Dockerfile
     container_name: kotlin-server
-
-    # Expose Kotlin API on port 8080
     ports:
       - "8080:8080"
-
-    # Restart container automatically if it crashes
     restart: unless-stopped
 
-  # Main backend service (Node.js/Express)
   backend:
     build:
-      # Path to backend source code
-      context: ./backendProjekt
+      context: ./backend
       dockerfile: Dockerfile
     container_name: backend
-
-    # Backend API available on localhost:3000
     ports:
       - "3000:3000"
-
-    # Load environment variables from .env file
     env_file: .env
-
     environment:
-      # MongoDB connection string
       - MONGODB_URI=${MONGODB_URI}
-
-      # Secret key for JWT authentication
       - JWT_SECRET=${JWT_SECRET}
-
-      # Internal Docker network URL for Kotlin service
       - KOTLIN_SERVICE_URL=http://kotlin-server:8080
-
-    # Start Kotlin service before backend
     depends_on:
       - kotlin-server
-
-    # Keep backend running unless manually stopped
     restart: unless-stopped
 
-  # Frontend service (Next.js application)
   frontend:
     build:
-      # Path to frontend project
       context: ./webApp
-
-      # Dockerfile location inside frontend folder
       dockerfile: frontend/Dockerfile
-
       args:
-        # Public API URL used during frontend build
-        - NEXT_PUBLIC_API_URL=http://localhost:3000
-
+        - NEXT_PUBLIC_API_URL=http://68.210.138.63:3000
     container_name: frontend
-
-    # Frontend accessible on localhost:3001
     ports:
       - "3001:3001"
-
     environment:
-      # Internal backend URL inside Docker network
       - API_URL=http://backend:3000
-
-    # Backend must start before frontend
     depends_on:
       - backend
-
-    # Restart frontend automatically if needed
     restart: unless-stopped
 ```
 
@@ -455,7 +415,7 @@ JWT_EXPIRES_IN=1d
 KOTLIN_SERVICE_URL=http://localhost:8080
 
 # CORS pravila
-CORS_ORIGIN=http://localhost:3001
+CORS_ORIGIN=http://68.210.138.63:3001
 
 # rate limiting
 RATE_LIMIT_WINDOW_MS=900000
@@ -596,7 +556,6 @@ SSH podpira dve metodi prijave:
 Do VM smo dostopali preko uporabnišgeka imena in gesla, ki smo jih nastavili ob nastavitvi VM:
 
 ![alt text](slike/geslo.png)
-
 
 ## SSH ključi
 
@@ -847,4 +806,3 @@ Api klic: http://68.210.138.63:8080/events/maribor vrne evente:
 ![alt text](slike/dokazApiMariborEvents.png)
 
 ---
-
