@@ -2,28 +2,25 @@
 
 ## DropInSlovenia
 
-**Skupina:** Matija Dukarić (vodja), Maj Donko, Luka Manfreda   
-**Skupina:** Matija Dukarić (vodja), Maj Donko, Luka Manfreda   
+**Skupina:** Matija Dukarić (vodja), Maj Donko, Luka Manfreda  
+**Skupina:** Matija Dukarić (vodja), Maj Donko, Luka Manfreda  
 **GitHub:** https://github.com/DropInSlovenia
 
 ---
 
 ## Vodenje sprinta
 
-
-
 ---
 
 ## 0. Struktura projekta in repozitoriji
 
-
 Naš projekt DropInSlovenia je razdeljen v **tri ločene GitHub repozitorije**, vsak za svoj servis:
 
-| Repozitorij                               | Tehnologija       | Namen                          |
-| ----------------------------------------- | ----------------- | ------------------------------ |
-| `github.com/DropInSlovenia/webApp`        | Next.js (React)   | Uporabniški vmesnik            |
-| `github.com/DropInSlovenia/backend`       | Node.js / Express | REST API, MongoDB komunikacija |
-| `github.com/DropInSlovenia/desktopApp`    | Kotlin / Ktor     | Scraping in zunanji podatki    |
+| Repozitorij                            | Tehnologija       | Namen                          |
+| -------------------------------------- | ----------------- | ------------------------------ |
+| `github.com/DropInSlovenia/webApp`     | Next.js (React)   | Uporabniški vmesnik            |
+| `github.com/DropInSlovenia/backend`    | Node.js / Express | REST API, MongoDB komunikacija |
+| `github.com/DropInSlovenia/desktopApp` | Kotlin / Ktor     | Scraping in zunanji podatki    |
 
 **Kako servisi komunicirajo med seboj:**
 
@@ -45,14 +42,13 @@ Uporabnik (brskalnik)
 Backend :3000  ──── MongoDB URI ────▶   MongoDB Atlas (oblak)
 ```
 
-**Zakaj ločeni repozitoriji?** Vsak servis ima svojo vlogo, svojo tehnologijo in svoj deployment cikel. Recimo backend in kotlin streznik delujeta kot celota in sta neodvisna of fontenda ali namize aplikacije, saj gre za REST APi. 
+**Zakaj ločeni repozitoriji?** Vsak servis ima svojo vlogo, svojo tehnologijo in svoj deployment cikel. Recimo backend in kotlin streznik delujeta kot celota in sta neodvisna of fontenda ali namize aplikacije, saj gre za REST APi.
 
 ---
 
 ## 0.1 MongoDB Atlas — nastavitev oblačne baze
 
-
-*Avtor: Matija Dukarić*
+_Avtor: Matija Dukarić_
 
 Za našo aplikacijo uporabljamo MongoDB Atlas, kar pomeni, da baza podatkov ni nameščena lokalno, ampak deluje v oblaku. To je prednost, ker lahko do baze dostopata tako lokalni razvoj kot tudi Azure VM, brez dodatnih namestitev MongoDB na posameznih računalnikih.
 
@@ -68,13 +64,11 @@ Prikaz nastavljenega clusterja:
 
 Prikaz baze v uporabi:
 
-![MongoDB Atlas baza v uporabi](slike/baza.png) 
-
-
+![MongoDB Atlas baza v uporabi](slike/baza.png)
 
 Potrdilo delovanja MongoDb Atlas baze:
 
-![MongoDB v delovanju](slike/delovanjeBaze.png) 
+![MongoDB v delovanju](slike/delovanjeBaze.png)
 
 Task v jiri:
 
@@ -86,8 +80,7 @@ Task v jiri:
 
 ### 1.0 Predpogoj — namestitev Dockerja lokalno
 
-
-*Avtor: Vsi*
+_Avtor: Vsi_
 
 Potrdilo delujocega dockerja:
 
@@ -193,7 +186,6 @@ docker run -p 3001:3001 dropinslovenia/frontend:test
 
 📸 _Slika: `docker build` uspešno zaključen za frontend_
 <img width="1181" height="516" alt="image" src="https://github.com/user-attachments/assets/b3fbd0ca-ad26-4d33-81bd-02c0ce4833f1" />
-
 
 📸 _Slika: Frontend dostopen na http://localhost:3001_
 <img width="2524" height="1291" alt="image" src="https://github.com/user-attachments/assets/c8860500-5cef-4a9d-9f73-aa2a39dcf418" />
@@ -353,11 +345,8 @@ Hkrati lahko vsak servis deluje tudi samostojno, zato ima lahko svoj lokalni .en
 
 Tak pristop omogoča večjo fleksibilnost, lažji razvoj ter dosledno upravljanje občutljivih podatkov, ki se nikoli ne shranjujejo v Git.
 
-
-
 ```yaml
 services:
-
   # Kotlin service for desktop/microservice logic
   kotlin-server:
     build:
@@ -507,7 +496,7 @@ docker ps
 docker compose down
 ```
 
-Prikaz repozitorija, kjer so not vidni kotlin streznik, fronent, backend,  .env, in yaml:
+Prikaz repozitorija, kjer so not vidni kotlin streznik, fronent, backend, .env, in yaml:
 
 ![alt text](slike/repoDokaz.png)
 
@@ -515,16 +504,13 @@ Uporaba ukaza `docker compose up --build`:
 
 ![alt text](slike/dokazUk.png)
 
-
 Uporaba ukaza `docker ps`:
 
 ![alt text](slike/dockerPs.png)
 
-
 Delujoc backend (REST API):
 
 ![alt text](slike/backendRest.png)
-
 
 Delujoc fronend (ni še popolnoma končan):
 
@@ -532,8 +518,7 @@ Delujoc fronend (ni še popolnoma končan):
 
 Slika jira taska:
 
-![alt text](slike/yamlTask.png)
----
+## ![alt text](slike/yamlTask.png)
 
 ## 2. Dostop do storitve Azure
 
@@ -553,17 +538,16 @@ _Avtor: Matija Dukarić, SSH ključi: Maj Donko, Luka Manfreda_
 
 ### 3.1 Parametri VM
 
-
-| Parameter | Vrednost |
-|-----------|----------|
-| Subscription | Azure for Students |
-| Resource group | DropInSlovenia_group_05191709 |
-| VM name | dropinslovenia-vm |
-| Region | Austria East (Zone 2) |
-| Image | Ubuntu Server 24.04 LTS |
-| Size | Standard B2ts v2 (2 vCPU, 1 GiB RAM) |
-| Authentication | Password |
-| Public IP | DA |
+| Parameter      | Vrednost                             |
+| -------------- | ------------------------------------ |
+| Subscription   | Azure for Students                   |
+| Resource group | DropInSlovenia_group_05191709        |
+| VM name        | dropinslovenia-vm                    |
+| Region         | Austria East (Zone 2)                |
+| Image          | Ubuntu Server 24.04 LTS              |
+| Size           | Standard B2ts v2 (2 vCPU, 1 GiB RAM) |
+| Authentication | Password                             |
+| Public IP      | DA                                   |
 
 ![alt text](slike/parametri.png)
 
@@ -579,38 +563,37 @@ Jira task:
 
 ![alt text](slike/vmJira2.png)
 
-
 ---
-
 
 ### 3.2 SSH dostop vseh članov
- 
+
 ---
- 
+
 ### Kaj je SSH in zakaj ključi?
- 
+
 **SSH** (Secure Shell) je protokol za varno oddaljeno upravljanje strežnikov prek ukazne vrstice. Z njim se povežemo na Azure VM kot da bi sedeli pred njim — iz kateregakoli računalnika, kjerkoli na svetu.
- 
+
 **Zakaj ključi namesto gesla?**
- 
+
 SSH podpira dve metodi prijave:
+
 - **Geslo** — preprosto, ampak ranljivo. Napadalci lahko avtomatsko preizkušajo tisoče gesel na sekundo (brute force napad).
 - **Par ključev** — varnejše. Temelji na matematičnem problemu ki ga z današnjo računalniško močjo ni mogoče rešiti v razumnem času.
-Par ključev sestavljata:
+  Par ključev sestavljata:
 - **Zasebni ključ** (`id_ed25519`) — ostane **samo na tvojem računalniku**, nikoli ga ne deli z nikomer, nikamor ne nalagaj
 - **Javni ključ** (`id_ed25519.pub`) — tega daš na strežnik; iz njega ni mogoče izpeljati zasebnega ključa
-Ob prijavi strežnik preveri: *"Imaš zasebni ključ ki ustreza javnemu ključu ki sem ga shranil?"* Če da — dostop dovoljen, brez gesla.
- 
+  Ob prijavi strežnik preveri: _"Imaš zasebni ključ ki ustreza javnemu ključu ki sem ga shranil?"_ Če da — dostop dovoljen, brez gesla.
+
 **`authorized_keys`** je datoteka na strežniku ki vsebuje seznam vseh dovoljenih javnih ključev. Vsaka vrstica je en ključ — po en na člana ekipe.
- 
+
 ---
- 
+
 ### Korak 1 — Vsak član je generiral SSH ključ na svojem računalniku
- 
+
 #### Windows
- 
+
 Odpremo **PowerShell**:
- 
+
 ```bash
 ssh-keygen -t ed25519 -C "ime.priimek@student.um.si"
 ```
@@ -619,86 +602,87 @@ ssh-keygen -t ed25519 -C "ime.priimek@student.um.si"
 - `-C "..."` — komentar/oznaka ključa, ponavadi email; pomaga pri razlikovanju ključev
 
 #### macOS / Linux
- 
+
 Odpremo terminal in vpišemo isti ukaz:
- 
+
 ```bash
 ssh-keygen -t ed25519 -C "ime.priimek@student.um.si"
 ```
- 
- 
+
 #### Prikažemo javni ključ
- 
+
 Ko je ključ generiran, prikažemo javni ključ:
- 
+
 **Windows (PowerShell):**
+
 ```bash
 type C:\Users\TvojeIme\.ssh\id_ed25519.pub
 ```
- 
+
 **macOS / Linux:**
+
 ```bash
 cat ~/.ssh/id_ed25519.pub
 ```
- 
+
 Izpis izgleda takole (primer):
+
 ```
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAbCdEfGhIjK... ime.priimek@student.um.si
 ```
- 
+
 ---
- 
+
 ### Korak 2 — Dodajanje javnih ključev od vseh 3 članov na VM:
- 
- 
+
 #### 2.1 — Prva prijava na VM z geslom
- 
+
 Ker ključev še nismo dodali, se prvič prijavimo z geslom ki smo ga nastavili ob ustvarjanju VM-ja:
 
 ![alt text](slike/prijavaGeslo.png)
- 
 
 Ob prvič vpraša:
+
 ```
 Are you sure you want to continue connecting (yes/no/[fingerprint])?
 ```
+
 Vpišemo `yes` in Enter. Nato vpišemo geslo VM-ja.
- 
+
 #### 2.2 — Ustvarimo `.ssh` mapo z ustreznimi pravicami
- 
+
 ![alt text](slike/chmod.png)
 
 `mkdir -p` ustvari mapo `~/.ssh` (če že obstaja, ne vrne napake).
 `chmod 700` pomeni: **samo lastnik** lahko bere, piše in odpira mapo. SSH bo zavrnil prijavo s ključem če ima mapa preveč odprte pravice — to je varnostna zahteva SSHja.
- 
+
 #### 2.3 — Dodamo javne ključe vseh članov
- 
+
 ```bash
 nano ~/.ssh/authorized_keys
 ```
- 
+
 `nano` je preprost urejevalnik besedil v terminalu. Odpre se prazna datoteka. Vanjo prilepimo javne ključe vseh treh članov — vsak v svojo vrstico:
- 
+
 ```
 ssh-ed25519 AAAAC3... matija@student.um.si
 ssh-ed25519 AAAAC3... maj@student.um.si
 ssh-ed25519 AAAAC3... luka@student.um.si
 ```
- 
+
 #### 2.4 — Nastavimo pravice na `authorized_keys`
- 
+
 ```bash
 chmod 600 ~/.ssh/authorized_keys
 ```
- 
+
 `chmod 600` pomeni: **samo lastnik** lahko bere in piše datoteko. SSH bo **zavrnil prijavo s ključem** če ima datoteka preveč odprte pravice (npr. 644 ali 777) — to je stroga varnostna zahteva.
- 
- 
+
 ### Korak 3 — Vsak član testira prijavo brez gesla
- 
+
 Ko so vsi kljuci dodani, vsak član na svojem računalniku preizkusi prijavo.
 Tokrat **ne vpraša za geslo** — prijava mora uspeti samodejno s ključem. Uspešna prijava izgleda tako:
- 
+
 ![alt text](slike/brezPrijave.png)
 
 Jira task:
@@ -743,8 +727,8 @@ Za vsako pravilo nastavimo:
 - **Priority:** npr. 1010, 1020, 1030, 1040 (vsak naslednji +10)
 
 > **Zakaj je privzeto vse zaprto?** Vsak odprt port je potencialna napadalna površina. Napadalec ki skenira internet bi na odprtem portu 3000 videl naš Node.js API in ga poskušal izkoristiti. Odpiramo samo kar nujno rabimo.
-<img width="1326" height="873" alt="image" src="https://github.com/user-attachments/assets/a368408c-121b-4252-a631-b0b2ff0554b9" />
----
+
+## <img width="1326" height="873" alt="image" src="https://github.com/user-attachments/assets/a368408c-121b-4252-a631-b0b2ff0554b9" />
 
 ### 4.2 Kakšen tip diska je bil dodan navidezni napravi in kakšna je njegova kapaciteta?
 
@@ -759,8 +743,7 @@ Naši navidezni napravi je bil samodejno dodan OS disk tipa **Premium SSD LRS** 
 - **Premium SSD** je osnovni SSD za večino trenutnih VM-ov na Azur-u
 - **LRS** (Locally Redundant Storage) pomeni da Azure podatke replicira **trikrat znotraj istega podatkovnega centra** v Amsterdamu. Če en fizični disk odpove, se podatki ohranijo. Ne varuje pred izpadom celotnega podatkovnega centra — za to bi potrebovali ZRS ali GRS.
 - **30 GB** je privzeta velikost OS diska za Ubuntu VM v Azure.
-<img width="1629" height="71" alt="image" src="https://github.com/user-attachments/assets/b6d7841d-78a8-448d-9eeb-748d24fc5bd1" />
-
+  <img width="1629" height="71" alt="image" src="https://github.com/user-attachments/assets/b6d7841d-78a8-448d-9eeb-748d24fc5bd1" />
 
 ---
 
@@ -780,188 +763,80 @@ _Luka Manfreda_
 ---
 
 ## 5. Vpostavitev Dockerja na Azure VM
- 
+
 ### 5.1 Namestitev Dockerja in swap
- 
+
 _Avtor: Matija Dukarić_
- 
+
 ---
- 
+
 ### Korak 1: Prijava na VM prek SSH
- 
+
 To je spet isti postopek kot prej:
 
 ![alt text](slike/brezPrijave.png)
- 
+
 ### Korak 2: Posodobitev sistema
- 
+
 Ko smo prijavljeni, najprej posodobimo seznam paketov in namestimo najnovejše varnostne popravke. To je dobra praksa pred vsako namestitvijo:
 ![alt text](slike/posodobitev.png)
- 
+
 - `apt update` — prenese aktualni seznam razpoložljivih paketov
 - `apt upgrade -y` — namesti vse posodobitve (`-y` samodejno potrdi vse)
- 
+
 ---
- 
+
 ### Korak 3: Namestitev Dockerja
- 
+
 Docker nameščamo z uradnim skriptom ki ga pripravi Docker sam. Skript samodejno zazna operacijski sistem, doda Docker repozitorij in namesti Docker Engine.
- 
 
 Prenesemo in namestimo namestitveno skripo:
 
- ![alt text](slike/names.png)
+![alt text](slike/names.png)
 
- 
 #### Preverimo namestitev
- 
+
 ![alt text](slike/namestitev.png)
- 
+
 ---
- 
+
 ### Korak 4: Dodajanje swap datoteke
- 
+
 **Zakaj swap?** Naš Azure Standard B2ts v2 VM ima samo **1 GiB RAMa**. Naša aplikacija teče v treh containerjih skupaj:
- 
-| Komponenta | Poraba RAMa |
-|---|---|
-| Next.js frontend | ~150–200 MB |
-| Node.js backend | ~100 MB |
-| Kotlin JVM | ~256 MB (omejeno z `-Xmx256m`) |
-| Ubuntu OS | ~200 MB |
-| **Skupaj** | **~700–800 MB** |
- 
+
+| Komponenta       | Poraba RAMa                    |
+| ---------------- | ------------------------------ |
+| Next.js frontend | ~150–200 MB                    |
+| Node.js backend  | ~100 MB                        |
+| Kotlin JVM       | ~256 MB (omejeno z `-Xmx256m`) |
+| Ubuntu OS        | ~200 MB                        |
+| **Skupaj**       | **~700–800 MB**                |
+
 Ko Docker gradi slike ob zagonu, poraba začasno naraste nad 1 GB — VM bi "zmrznil" ali se sesul. Rešitev je **swap datoteka** — rezerviran del diska, ki ga operacijski sistem začasno uporablja kot razširitev RAMa. Je počasnejši od pravega RAMa, a za naš primer povsem zadostuje.
- 
+
 > **Opomba:** Originalna navodila predvidevajo Standard B1s (1 vCPU, 1 GB RAM), mi pa smo zaradi problemov (ki smo jih opisali pri namestitvi) naročnine Azure for Students izbrali Standard B2ts v2 (2 vCPU, 1 GiB RAM). Količina RAMa je enaka, zato so vsi koraki — vključno z dodajanjem swapa — identični.
- 
+
 # Ustvarimo 2 GB swap datoteko, nastavimo pravice, inicializiramo in aktiviramo jo ter jo dodamo v /etc/fstab za trajno delovanje
 
 ![alt text](slike/swap.png)
- 
- Jira task:
- ![alt text](slike/jirat.png)
+
+Jira task:
+![alt text](slike/jirat.png)
 
 ---
 
 ### 5.2 Prenos kode in zagon
 
-_Avtor: Luka Manfreda_
+_Luka Manfreda_
 
-**Izziv z ločenimi repozitoriji:** Ker imamo 3 ločene git repozitorije, jih moramo vse klonirati na VM v ustrezno strukturo map. `docker-compose.yml` pričakuje vse tri v isti nadrejeni mapi.
+Docker containerji na VM:
+![alt text](slike/dockerVMContainers.png)
 
-**Korak 1 — Kloniramo repozitorije:**
+Aplikacija je ob zagonu na VM dostopna na http://68.210.138.63:3001:
+![alt text](slike/aplikacijaDostopna.png)
 
-```bash
-# Na VM ustvarimo delovno mapo
-mkdir -p ~/dropinslovenia
-cd ~/dropinslovenia
-
-
-# Kloniramo vse tri repozitorije
-git clone https://github.com/DropInSlovenia/frontend.git
-git clone https://github.com/DropInSlovenia/backend.git
-git clone https://github.com/DropInSlovenia/kotlin-server.git
-
-
-# Preverimo strukturo
-ls -la
-# Mora videti: frontend/  backend/  kotlin-server/
-```
-
-**Korak 2 — Ustvarimo `.env` datoteko z dejanskimi vrednostmi:**
-
-```bash
-# Na VM ustvarimo .env (Matija vnese prave vrednosti)
-nano ~/dropinslovenia/.env
-```
-
-Vsebina `.env`:
-
-```env
-MONGODB_URI=mongodb+srv://dropinslovenia-user:GESLO@cluster0.xxxxx.mongodb.net/dropinslovenia
-JWT_SECRET=nek_dolg_nakljucen_string_tukaj_vsaj_32_znakov
-GOOGLE_PLACES_API_KEY=AIza...
-```
-
-> **Varnostna opomba:** Ta datoteka ostane samo na VM. Nikoli je ne commitamo v git. Če jo brišemo ali VM resetiramo, jo moramo znova ročno ustvariti.
-
-**Korak 3 — Ustvarimo `docker-compose.yml` za Azure VM:**
-
-`docker-compose.yml` za Azure VM se razlikuje od lokalnega v enem delu — `NEXT_PUBLIC_API_URL` mora biti javni IP VM, ne `localhost`:
-
-```bash
-nano ~/dropinslovenia/docker-compose.yml
-```
-
-Vsebina (enaka kot lokalna, le z zamenjano vrednostjo za frontend):
-
-```yaml
-# (enako kot v sekciji 1.5, le ta vrstica drugačna:)
-args:
-  - NEXT_PUBLIC_API_URL=http://<PUBLIC_IP>:3000/api
-  # Zamenjaj <PUBLIC_IP> z dejanskim IP naslovom Azure VM!
-```
-
-**Zakaj je to potrebno?** `NEXT_PUBLIC_API_URL` se vtisne v JavaScript bundle med Docker buildom. Frontend teče v **uporabnikovem brskalniku** — ne v Docker omrežju. Ko brskalnik naredi API klic, mora doseči backend prek javnega IP-ja, ne prek `localhost` (ki bi kazal na uporabnikov računalnik).
-
-**Korak 4 — Zagon:**
-
-```bash
-cd ~/dropinslovenia
-
-
-# Zgradi slike in zaženi v ozadju
-# Opozorilo: Kotlin build traja ~5-10 minut, ostala dva ~2-3 minute
-docker compose up --build -d
-
-
-# Sproti opazuj loge med buildom
-docker compose logs -f
-
-
-# Ko je vse zagnano, preveri status
-docker ps
-```
-
-**Test dostopnosti iz interneta** (vsak na svojem računalniku v brskalniku):
-
-```
-http://<PUBLIC_IP>:3001                    ← Frontend
-http://<PUBLIC_IP>:3000/api                ← Backend
-http://<PUBLIC_IP>:8080/events/maribor     ← Kotlin server
-```
-
-**Posodobitev kode na VM** (ko pushate spremembe na git):
-
-```bash
-cd ~/dropinslovenia/frontend   # ali backend ali kotlin-server
-git pull
-cd ~/dropinslovenia
-docker compose up --build -d frontend  # rebuild samo spremenjenega servisa
-```
-
-📸 _Slika: `docker ps` na VM — vsi 3 containerji Up_
-`[VSTAVI SLIKO TUKAJ]`
-
-📸 _Slika: Aplikacija dostopna v brskalniku na `http://<PUBLIC_IP>:3001`_
-`[VSTAVI SLIKO TUKAJ]`
-
-📸 _Slika: API klic na `http://<PUBLIC_IP>:8080/events/maribor` vrne JSON_
-`[VSTAVI SLIKO TUKAJ]`
-
----
-
-## Morebitne težave in rešitve
-
-| Težava                                        | Vzrok                                                         | Rešitev                                                                       |
-| --------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `docker compose up` zamrzne pri Kotlin buildu | VM zmanjka RAMa med Gradle buildom                            | Preveri da je swap aktiven (`free -h`), dodaj 2GB swap                        |
-| Frontend ne more doseči backenda              | `NEXT_PUBLIC_API_URL` kaže na `localhost` namesto na javni IP | Posodobi `docker-compose.yml` z dejanskim `<PUBLIC_IP>` in rebuildaj frontend |
-| SSH dostop zavrnjen                           | Napačne pravice na `authorized_keys`                          | Na VM: `chmod 600 ~/.ssh/authorized_keys` in `chmod 700 ~/.ssh`               |
-| MongoDB connection error                      | IP Azure VM ni dovoljen v Atlas                               | Dodaj `0.0.0.0/0` v Atlas Network Access                                      |
-| Port ni dostopen iz interneta                 | NSG pravilo manjka                                            | Dodaj Inbound rule za ustrezni port v Azure NSG                               |
-| [Opiši svojo težavo]                          | [Opiši vzrok]                                                 | [Opiši rešitev]                                                               |
+Api klic: http://68.210.138.63:8080/events/maribor vrne evente:
+![alt text](slike/dokazApiMariborEvents.png)
 
 ---
 
