@@ -3,12 +3,15 @@
 ## DropInSlovenia
 
 **Skupina:** Matija Dukarić (vodja), Maj Donko, Luka Manfreda  
-**Skupina:** Matija Dukarić (vodja), Maj Donko, Luka Manfreda  
 **GitHub:** https://github.com/DropInSlovenia
 
 ---
 
 ## Vodenje sprinta
+
+Vsi taski znotraj sprinta:
+
+![alt text](slike/sprint.png)
 
 ---
 
@@ -588,6 +591,15 @@ SSH podpira dve metodi prijave:
 
 ---
 
+### Dostop preko gesla:
+
+Do VM smo dostopali preko uporabnišgeka imena in gesla, ki smo jih nastavili ob nastavitvi VM:
+
+![alt text](slike/geslo.png)
+
+
+## SSH ključi
+
 ### Korak 1 — Vsak član je generiral SSH ključ na svojem računalniku
 
 #### Windows
@@ -664,11 +676,7 @@ nano ~/.ssh/authorized_keys
 
 `nano` je preprost urejevalnik besedil v terminalu. Odpre se prazna datoteka. Vanjo prilepimo javne ključe vseh treh članov — vsak v svojo vrstico:
 
-```
-ssh-ed25519 AAAAC3... matija@student.um.si
-ssh-ed25519 AAAAC3... maj@student.um.si
-ssh-ed25519 AAAAC3... luka@student.um.si
-```
+![alt text](slike/gesla.png)
 
 #### 2.4 — Nastavimo pravice na `authorized_keys`
 
@@ -840,4 +848,3 @@ Api klic: http://68.210.138.63:8080/events/maribor vrne evente:
 
 ---
 
-_Poročilo P2 — DropInSlovenia | Maj 2026_
