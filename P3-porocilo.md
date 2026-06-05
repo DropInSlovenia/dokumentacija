@@ -3,10 +3,6 @@
 
 
 **Skupina:** Matija Dukarić (vodja), Maj Donko, Luka Manfreda  
-**Datum oddaje:** ___________  
-**GitHub:** https://github.com/DropInSlovenia  
-**Docker Hub:** https://hub.docker.com/u/dropinslovenia
-
 
 ---
 
@@ -28,7 +24,6 @@
 | TASK-25 | Varnostna analiza + UFW firewall | Maj (dokumentacija), Matija (implementacija) |
 | TASK-26 | Opis dodatnih GitHub Actions workflows | Maj Donko |
 | TASK-27 | Pisanje poročila P3 | Luka (koordinacija) |
-
 
 ---
 
@@ -69,18 +64,22 @@ Razvijalec naredi spremembo v kodi
          │       ├─── Prenese novo sliko z Docker Hub
          │       └─── Zažene nov container
          ▼
-  Aplikacija je posodobljena na VM ✓
+  Aplikacija je posodobljena na VM 
 ```
-
-
-**Zakaj ločen Docker Hub?** GitHub Actions gradi sliko na GitHub strežnikih, ne na našem VM-ju. Sliko mora "prenesti" na VM — Docker Hub je vmesno skladišče (registry). VM ne more direktno dostopati do GitHub Actions build okolja.
 
 
 **Zakaj 3 ločeni workflow-i?** Ker imamo 3 ločene repozitorije (frontend, backend, kotlin-server), vsak dobi svojo workflow datoteko. Ko pushamo spremembo samo v backend repozitorij, se zgradi in deployira samo backend — frontend in kotlin-server ostaneta nedotaknjena.
 
 
----
+**Dve veji, dva tipa sprotne integracije.** CI/CD smo razdelili glede na vejo:
+- **Razvojna veja `dev`** — ob vsaki potrditvi (commit) ali pull requestu se samodejno zaženejo **testi enot** (angl. unit testing) in objavi se **poročilo o rezultatih** (sekcija 2.2). Tu se koda **ne** deployira — namen je hitra povratna informacija ali sprememba česa ne pokvari.
+- **Produkcijska veja `main`** — ob vsaki potrditvi se koda **prevede, zapakira v Docker sliko in deployira** na strežnik (sekcije 2.3–2.5 in 3). Tako v produkcijo pride samo koda, ki je bila prej stestirana na `dev`.
 
+
+**Opomba o GitLab vs GitHub.** Navodila naloge omenjajo poročanje s strani GitLaba; mi smo celoten projekt razvijali na **GitHubu** (organizacija `DropInSlovenia`), zato smo sprotno integracijo izvedli z **GitHub Actions**. GitHub Actions je funkcionalno enakovreden GitLab CI/CD — opravlja avtomatsko testiranje, gradnjo, pakiranje, deploy in poročanje o rezultatih.
+
+
+---
 
 ## 1. Docker Hub Container Registry
 
@@ -92,35 +91,19 @@ Razvijalec naredi spremembo v kodi
 **Kaj je Docker Hub?** Docker Hub je javni register Docker slik — podobno kot GitHub za kodo, le da shranjuje Docker slike. Ko GitHub Actions zgradi sliko, jo naloži sem. Ko VM potrebuje novo verzijo, jo prenese od sem.
 
 
-**Zakaj javni repozitoriji?** Docker Hub v brezplačnem računu dovoli samo en privatni repozitorij. Za šolski projekt javni repozitoriji niso problem — Docker slike same po sebi ne vsebujejo gesel ali skrivnosti (te so v environment spremenljivkah ki se podajo ob zagonu, ne med buildom).
-
-
 **Zakaj Access Token namesto gesla?** Access Token je poseben ključ z omejenimi pravicami (samo branje/pisanje slik, ne upravljanje računa). Če bi bil token odtujen (npr. uhajanje iz GitHub Secrets), ga v sekundi pobrišemo in naredimo novega — brez da bi morali menjati geslo računa. Geslo ima polne pravice, token pa ne.
 
 
-**Koraki:**
-1. Odpri https://hub.docker.com in ustvari račun z imenom `dropinslovenia`
-2. Ustvari repozitorije:
-   - **Create Repository** → ime `frontend` → Public → Create
-   - **Create Repository** → ime `backend` → Public → Create
-   - **Create Repository** → ime `kotlin-server` → Public → Create
-3. Ustvari Access Token:
-   - Klikni na avatar (zgoraj desno) → **Account Settings**
-   - Levi meni → **Security** → **Access Tokens** → **New Access Token**
-   - Ime: `github-actions`
-   - Access permissions: `Read & Write`
-   - Klikni **Generate** → **shrani token takoj** — prikazan je SAMO enkrat!
+*Slika: Docker Hub dashboard z vsemi 3 repozitoriji*
 
-
-📸 *Slika: Docker Hub dashboard z vsemi 3 repozitoriji*
-`[VSTAVI SLIKO TUKAJ]`
+![alt text](slike2/repoji.png)
 
 
 ---
 
 
 ### 1.2 CLI ukazi za container registry
-*Avtor: Maj Donko (frontend), Luka Manfreda (backend + kotlin)*
+*Avtor:*
 
 
 Dokumentirani ukazi in razlaga:
@@ -159,71 +142,19 @@ docker run -d -p 3001:3001 dropinslovenia/frontend:latest
 ```
 
 
-**`:latest` vs `:<git-sha>` tag — zakaj oba:**
+**Tag `:latest`:**
 
 
-`:latest` je konvencionalni tag za zadnjo verzijo. GitHub Actions ga prepiše ob vsakem deploymentu — vedno kaže na trenutno najnovejšo sliko. Enostavno za referenco.
+`:latest` je konvencionalni tag za zadnjo verzijo. GitHub Actions ga prepiše ob vsakem deploymentu — vedno kaže na trenutno najnovejšo sliko, skripta na strežniku pa vedno potegne prav to oznako. Tako ostane delovni tok preprost.
 
 
-`:<git-sha>` je tag z Git commit hash-em (npr. `:a3f8c2e1d4b7`). Vsak commit dobi svojo edinstveno sliko ki se **nikoli ne prepiše**. S tem imamo zgodovino slik in lahko kadarkoli vrnemo na točno določen commit z `docker pull dropinslovenia/frontend:a3f8c2e`.
+Možna nadgradnja: sliko bi lahko dodatno tagirali z Git commit hashem (`:${{ github.sha }}`), kar bi ohranilo zgodovino slik in omogočilo vračanje na prejšnjo verzijo (rollback) z `docker pull dropinslovenia/frontend:<sha>`.
 
 
-V GitHub Actions workflowu naložimo obe oznaki hkrati:
+V GitHub Actions workflowu naložimo oznako takole:
 ```yaml
-tags: |
-  dropinslovenia/frontend:latest
-  dropinslovenia/frontend:${{ github.sha }}
+tags: dropinslovenia/frontend:latest
 ```
-
-
----
-
-
-### 1.3 Nalaganje slik na Docker Hub
-*Avtor: Maj Donko (frontend), Luka Manfreda (backend + kotlin)*
-
-
-Preden vzpostavimo avtomatizirani CI/CD pipeline, slike **ročno naložimo** na Docker Hub. Namen je dvojen: preveriti da `docker build` in `docker push` delujeta pravilno, in imeti veljavne slike na Docker Hub preden prvič zaženemo GitHub Actions.
-
-
-```bash
-# Prijava (vnesi access token kot geslo)
-docker login -u dropinslovenia
-
-
-# --- Maj: Frontend ---
-docker build -t dropinslovenia/frontend:latest ./frontend
-docker push dropinslovenia/frontend:latest
-
-
-# --- Luka: Backend ---
-docker build -t dropinslovenia/backend:latest ./backend
-docker push dropinslovenia/backend:latest
-
-
-# --- Luka: Kotlin server ---
-docker build -t dropinslovenia/kotlin-server:latest ./kotlin-server
-docker push dropinslovenia/kotlin-server:latest
-```
-
-
-> [Opiši morebitne težave pri buildu ali pushu in kako si jih rešil]
-
-
-📸 *Slika: Terminal z uspešnim `docker push` za frontend*
-`[VSTAVI SLIKO TUKAJ]`
-
-
-📸 *Slika: Docker Hub — frontend repozitorij z naloženo `latest` sliko in časovnim žigom*
-`[VSTAVI SLIKO TUKAJ]`
-
-
-📸 *Slika: Docker Hub — backend repozitorij*
-`[VSTAVI SLIKO TUKAJ]`
-
-
-📸 *Slika: Docker Hub — kotlin-server repozitorij*
-`[VSTAVI SLIKO TUKAJ]`
 
 
 ---
@@ -232,8 +163,13 @@ docker push dropinslovenia/kotlin-server:latest
 ## 2. GitHub Actions Workflows
 
 
+V vsakem repozitoriju imamo **dva tipa workflow datotek** v mapi `.github/workflows/`:
+- `test.yml` — sproži se ob potrditvah na **razvojni veji `dev`** in poganja teste enot s poročanjem (sekcija 2.2).
+- `deploy.yml` — sproži se ob potrditvah na **produkcijski veji `main`** in zgradi, zapakira ter deployira Docker sliko (sekcije 2.3–2.5).
+
+
 ### 2.1 GitHub Secrets
-*Avtor: Matija Dukarić*
+*Avtor:*
 
 
 **Kaj so GitHub Secrets?** GitHub Secrets so šifrirane spremenljivke shranjene v GitHub repozitoriju. V workflow YAML datotekah jih referenciramo z `${{ secrets.IME }}`. Vrednosti so šifrirane in nikoli vidne v logih — niti lastniku repozitorija po shranitvi.
@@ -249,35 +185,195 @@ Za vsak repozitorij (frontend, backend, kotlin-server) nastavi secrets:
 **GitHub → Settings → Secrets and variables → Actions → New repository secret**
 
 
-| Secret | Vrednost | Namen |
-|--------|----------|-------|
-| `DOCKERHUB_USERNAME` | `dropinslovenia` | Uporabniško ime za Docker Hub login |
-| `DOCKERHUB_TOKEN` | access token iz 1.1 | Ključ za push slik (ne pravo geslo) |
-| `VM_HOST` | javni IP Azure VM (npr. `20.123.45.67`) | Za webhook URL in frontend build arg |
-| `VM_USERNAME` | `azureuser` | Za referenco v workflowih (info) |
-| `WEBHOOK_SECRET` | output od `openssl rand -hex 32` | HMAC ključ za podpisovanje webhook zahtev |
+![alt text](slike2/secrets.png)
 
-
-**Generiranje webhook secreta** (enkrat, Matija):
-```bash
-openssl rand -hex 32
-# Primer outputa: a3f8c2e1d4b756c8f0e9d2a1b3c4d5e6...
-# Ta string shrani:
-# 1. Kot GitHub Secret WEBHOOK_SECRET v vseh 3 repozitorijih
-# 2. Kot vrednost v hooks.json na VM (sekcija 3.3)
-# Morata biti IDENTIČNA!
-```
-
-
-📸 *Slika: GitHub Settings → Secrets stran z vidnimi imeni secretov (vrednosti so skrite)*
-`[VSTAVI SLIKO TUKAJ]`
 
 
 ---
 
 
-### 2.2 Workflow — Frontend
-*Avtor: Maj Donko*
+### 2.2 Sprotna integracija nad razvojno vejo — testiranje enot
+*Avtor:*
+
+
+To poglavje pokriva **prvo zahtevo naloge**: sprotno integracijo nad razvojno vejo (`dev`) z avtomatskim testiranjem enot in poročanjem.
+
+
+**Kako deluje?** V vsakem repozitoriju je workflow `test.yml`, ki se sproži ob vsakem `push` na vejo `dev` in ob vsakem pull requestu proti `dev` ali `main`. Workflow namesti odvisnosti, zažene teste enot in ustvari **JUnit poročilo**. Poročilo objavimo z akcijo `dorny/test-reporter`, ki rezultate prikaže neposredno v GitHub vmesniku (zavihek **Checks** na commitu/PR-ju: koliko testov je prestalo, koliko padlo).
+
+
+**Zakaj prav na `dev` veji?** Razvijalec dela na `dev` (oz. feature) veji. Ob vsakem pushu takoj dobi povratno informacijo, ali so njegove spremembe pokvarile katero od obstoječih funkcionalnosti — še preden se koda zlije v `main` in deployira v produkcijo. To je bistvo sprotne integracije (CI).
+
+
+**Testna ogrodja po komponentah:**
+
+| Komponenta | Ogrodje | Kaj testiramo |
+|------------|---------|---------------|
+| Backend (Node.js) | vgrajeni `node:test` | pretvorba OSRM odgovora v GeoJSON (`osrmToGeoJSON`), `asyncHandler` ovojnica |
+| Frontend (Next.js) | `vitest` + `jsdom` | shranjevanje/branje access tokena (`tokens.ts`) |
+| Kotlin (desktopApp) | `kotlin.test` (Gradle) | logika v `composeApp` (`jvmTest`) |
+
+
+
+
+**Workflow datoteka (primer backend): `backend/.github/workflows/test.yml`**
+
+
+```yaml
+name: Testi Backend
+
+on:
+  push:
+    branches: [ development ]          # sproži se ob potrditvi na razvojni veji
+  pull_request:
+    branches: [ development, main ]
+
+permissions:
+  contents: read
+  checks: write                # potrebno, da dorny/test-reporter objavi poročilo
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Namesti Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Namesti odvisnosti
+        run: npm ci
+
+      - name: Zaženi unit teste in ustvari JUnit poročilo
+        run: >
+          node --test
+          --test-reporter spec --test-reporter-destination=stdout
+          --test-reporter junit --test-reporter-destination=junit.xml
+
+      - name: Objavi poročilo o testih
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Backend unit testi
+          path: junit.xml
+          reporter: java-junit
+```
+
+
+**Frontend** (`frontend/.github/workflows/test.yml`) je enak po strukturi, le da teste poganja z `vitest`:
+```yaml
+name: Testi Frontend
+
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev, main ]
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Namesti Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Namesti odvisnosti
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Zaženi unit teste in ustvari JUnit poročilo
+        run: npx vitest run --passWithNoTests --reporter=default --reporter=junit --outputFile=junit.xml
+
+      - name: Objavi poročilo o testih
+        uses: dorny/test-reporter@v2
+        if: ${{ always() && hashFiles('junit.xml') != '' }}
+        with:
+          name: Frontend unit testi
+          path: junit.xml
+          reporter: java-junit
+```
+
+
+**Kotlin** (`desktopApp/.github/workflows/test.yml`) uporablja JDK 21 in Gradle. Gradle že sam ustvari JUnit XML poročila v `composeApp/build/test-results/jvmTest/`:
+```yaml
+name: Testi Kotlin
+
+  on:
+    push:
+      branches: [ dev ]
+    pull_request:
+      branches: [ dev, main, master ]
+
+  permissions:
+    contents: read
+    checks: write
+
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+
+        - uses: actions/setup-java@v4
+          with:
+            distribution: temurin
+            java-version: 21
+
+        - uses: gradle/actions/setup-gradle@v4
+
+        - name: Zaženi jvmTest
+          run: |
+            chmod +x ./gradlew
+            ./gradlew jvmTest --no-daemon
+
+        - name: Objavi poročilo o testih
+          uses: dorny/test-reporter@v1
+          if: always()
+          with:
+            name: Kotlin unit testi
+            path: composeApp/build/test-results/jvmTest/*.xml
+            reporter: java-junit
+```
+
+
+**Kako preveriti, da deluje:**
+1. Na veji `dev` naredi spremembo in `git push origin dev`
+2. GitHub → zavihek **Actions** → odpre se "Testi ..." workflow
+3. Po zaključku se v zavihku **Checks** (na commitu/PR-ju) prikaže poročilo: število uspešnih/neuspešnih testov
+
+*Slike: GitHub Actions — uspešen "Testi" workflow run z zelenimi testi*
+
+Kotlin server:
+![alt text](slike2/image.png)
+
+WebApp:
+
+![alt text](slike2/image-1.png)
+
+Backend
+
+![alt text](slike2/image-2.png)
+
+---
+
+
+### 2.3 Workflow — Frontend (produkcijska veja)
+*Avtor*
 
 
 **Kaj je GitHub Actions workflow?** Workflow je YAML datoteka v `.github/workflows/` mapi repozitorija ki opisuje avtomatizirane korake. GitHub ga samodejno zazna in izvaja ob določenih dogodkih (npr. push na main).
@@ -294,23 +390,18 @@ Workflow ima **dva joba** ki tečeta zaporedno:
 **Ključna beseda `needs: build-and-push`** pove GitHub Actions da naj `notify-server` job počaka na uspešen zaključek `build-and-push` joba. Če build ne uspe (npr. napaka v kodi), se webhook ne pošlje in na VM ostane stara delujoča verzija. To je namerna odločitev — ne deployiramo pokvarjene verzije.
 
 
-**`${{ github.sha }}`** je unikatni Git commit hash (npr. `a3f8c2e`). Z njim tagnemo Docker sliko da vemo točno kateri commit je v produkciji. Če bi nova verzija pokvarila aplikacijo, bi z `docker pull dropinslovenia/frontend:<stari-sha>` vrnili na prejšnjo.
+**Tag `:latest`** — sliko označimo z `latest`, skripta na strežniku pa vedno potegne to oznako. Tako ostane delovni tok preprost (kot zahteva naloga). Možna nadgradnja bi bila dodatno tagiranje s commit hashem `${{ github.sha }}`, kar bi omogočalo vračanje na prejšnjo verzijo (rollback).
 
 
 **`build-args`** prenese `NEXT_PUBLIC_API_URL` med Docker buildom. Next.js ta URL **vtisne v JavaScript bundle med kompilacijo** — zato ga moramo podati takrat. Vrednost je `http://<VM_HOST>:3000/api` — javni IP Azure VM.
 
 
-Datoteka: `frontend/.github/workflows/ci-cd.yml`
-
-
 ```yaml
 name: CI/CD Frontend
-
 
 on:
   push:
     branches: [ main ]
-
 
 jobs:
   # JOB 1: Zgradimo Docker sliko in jo naložimo na Docker Hub
@@ -318,36 +409,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout kode
-        uses: actions/checkout@v4
-        # Prenese kodo iz repozitorija na GitHub Actions runner
-
+        uses: actions/checkout@v5
 
       - name: Prijava na Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          # Uporabi secrets, ne plaintext vrednosti!
-
 
       - name: Gradnja in push Docker slike
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/frontend:${{ github.sha }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/dropinslovenia_frontend:latest
+          # VM_HOST je javni IP Azure VM — NEXT_PUBLIC_* se vtisne v Next.js bundle ob buildu
           build-args: |
             NEXT_PUBLIC_API_URL=http://${{ secrets.VM_HOST }}:3000/api
-            # VM_HOST je javni IP Azure VM — vtisne se v Next.js bundle
-
 
   # JOB 2: Obvesti VM — zažene se SAMO če je Job 1 uspel
   notify-server:
     runs-on: ubuntu-latest
     needs: build-and-push
-    # needs: pomeni "čakaj na uspešen zaključek build-and-push"
     steps:
       - name: Pošlji webhook na VM
         uses: distributhor/workflow-webhook@v3
@@ -355,42 +438,33 @@ jobs:
           webhook_url: http://${{ secrets.VM_HOST }}:9000/hooks/deploy-frontend
           webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
           data: '{"service": "frontend"}'
-          # data: je JSON payload ki ga pošljemo — deploy.sh bo prebral "service"
 ```
 
 
-**Kako preveriti da workflow deluje:**
-1. Naredi kakršno koli spremembo v kodi (npr. dodaj vrstico v README)
-2. `git add . && git commit -m "test ci/cd" && git push`
-3. Pojdi na GitHub → **Actions** zavihek → vidiš workflow ki se izvaja
-4. Klikni na run → vidiš oba joba v realnem času z logi
 
 
-📸 *Slika: GitHub Actions — uspešen frontend workflow run z obema zelenima joboma*
-`[VSTAVI SLIKO TUKAJ]`
+*Slika: GitHub Actions — uspešen frontend workflow run z obema zelenima joboma*
 
+![alt text](slike2/image-3.png)
 
 ---
 
 
-### 2.3 Workflow — Backend
-*Avtor: Luka Manfreda*
+### 2.4 Workflow — Backend (produkcijska veja)
+*Avtor*
 
 
 Backend workflow je strukturno enak frontend workflowu z eno razliko — ni `build-args`. Backend (Node.js) bere environment spremenljivke dinamično ob zagonu z `process.env.KOTLIN_SERVER_URL` — ne med buildom. Zato ni treba ničesar vtiskati v sliko.
 
 
-Datoteka: `backend/.github/workflows/ci-cd.yml`
 
 
 ```yaml
 name: CI/CD Backend
 
-
 on:
   push:
     branches: [ main ]
-
 
 jobs:
   build-and-push:
@@ -398,23 +472,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/backend:${{ github.sha }}
-
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/dropinslovenia_backend:latest
 
   notify-server:
     runs-on: ubuntu-latest
@@ -429,31 +498,28 @@ jobs:
 ```
 
 
-📸 *Slika: GitHub Actions — uspešen backend workflow run*
-`[VSTAVI SLIKO TUKAJ]`
+*Slika: GitHub Actions — uspešen backend workflow run*
+![alt text](slike2/image-4.png)
 
 
 ---
 
 
-### 2.4 Workflow — Kotlin server
-*Avtor: Matija Dukarić*
+### 2.5 Workflow — Kotlin server (produkcijska veja)
+*Avtor*
 
 
 Kotlin workflow je enak backend workflowu. Posebnost: Gradle mora ob prvem buildu prenesti vse odvisnosti (~200 MB) kar traja **5–10 minut**. To je normalno — GitHub Actions runner nima predpomnjenega Gradle cache-a. Ob naslednjih buildih je enako počasen ker Docker vsakič začne od začetka v čistem okolju. Optimizacija bi bila dodati `actions/cache` za `.gradle` mapo — za to nalogo ni zahtevano.
 
 
-Datoteka: `kotlin-server/.github/workflows/ci-cd.yml`
 
 
 ```yaml
 name: CI/CD Kotlin Server
 
-
 on:
   push:
-    branches: [ main ]
-
+    branches: [ main, master ]
 
 jobs:
   build-and-push:
@@ -461,23 +527,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/kotlin-server:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/kotlin-server:${{ github.sha }}
-
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/dropinslovenia_kotlin-server:latest
 
   notify-server:
     runs-on: ubuntu-latest
@@ -492,66 +553,11 @@ jobs:
 ```
 
 
-📸 *Slika: GitHub Actions — uspešen kotlin workflow run*
-`[VSTAVI SLIKO TUKAJ]`
+*Slika: GitHub Actions — uspešen kotlin workflow run*
+![alt text](slike2/image-5.png)
 
 
 ---
-
-
-### 2.5 Možni dodatni GitHub Actions workflows
-*Avtor: Maj Donko*
-
-
-**1. Lint workflow** — preverja kakovost kode ob vsakem pull requestu:
-```yaml
-name: Lint
-on: [pull_request]
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm ci
-      - run: npm run lint
-```
-*Korist za naš projekt:* ESLint napake ujamemo preden gredo v `main` branch. Zmanjšamo število bugov v produkciji in ohranimo konsistenten stil kode v vseh treh repozitorijih.
-
-
-**2. Test workflow** — poganja unit teste avtomatično ob vsakem PR-ju:
-```yaml
-name: Tests
-on: [pull_request]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm ci
-      - run: npm test
-```
-*Korist za naš projekt:* Zagotavlja da novi commiti ne zlomijo obstoječih API endpointov ali komponent. Posebej koristno za backend kjer bi testirali MongoDB operacije in REST API odgovore.
-
-
-**3. Security scan workflow** — preverja ranljivosti v npm odvisnostih:
-```yaml
-name: Security
-on:
-  push:
-    branches: [ main ]
-jobs:
-  audit:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm audit --audit-level=high
-```
-*Korist za naš projekt:* `npm audit` preveri ali katera od naših npm knjižnic vsebuje znane varnostne ranljivosti (CVE). Workflow nas opozori preden ranljiva verzija gre v produkcijo.
-
-
-**4. Branch protection + status checks:**
-V GitHub Settings → Branches → Add rule → Require status checks before merging → izberi `lint` in `test` workflowe.
-*Korist:* Direktni push na `main` je blokiran. Vsaka sprememba mora iti prek pull requesta in mora prestati lint + test. To je standardna praksa v ekipnem razvoju — nihče ne more "slučajno" pokvariti produkcije.
 
 
 ---
@@ -561,7 +567,7 @@ V GitHub Settings → Branches → Add rule → Require status checks before mer
 
 
 ### 3.1 Namestitev webhook strežnika
-*Avtor: Matija Dukarić*
+*Avtor*
 
 
 **Kaj je `webhook` paket?** `webhook` je majhen HTTP strežnik napisan v Go ki posluša na določenem portu (pri nas 9000). Ko dobi HTTP zahtevo na `/hooks/<id>`, preveri pogoje (pri nas HMAC podpis) in zažene nastavljeno skripto. Je lahek, zanesljiv in enostaven za konfigurirati.
@@ -584,7 +590,7 @@ webhook --version
 
 
 ### 3.2 Deploy skripta
-*Avtor: Luka Manfreda*
+*Avtor*
 
 
 **Logika skripte:** Skripta sprejme ime servisa (`frontend`, `backend` ali `kotlin-server`) kot argument `$1`. `case` stavek določi ustrezno Docker sliko, ime containerja in port mapping. Nato:
@@ -608,8 +614,8 @@ Datoteka: `/opt/deploy/deploy.sh`
 
 
 SERVICE=$1
-DOCKERHUB_USER="dropinslovenia"
-ENV_FILE="/home/azureuser/.env"
+DOCKERHUB_USER="dukica"
+ENV_FILE="/home/dropInSloveniaVM/dropinslovenia/.env"
 LOG_FILE="/var/log/deploy.log"
 
 
@@ -620,17 +626,17 @@ echo "[$(date)] Deploy zahtevano za: $SERVICE" >> $LOG_FILE
 # Določimo parametre glede na servis
 case $SERVICE in
   "frontend")
-    IMAGE="$DOCKERHUB_USER/frontend:latest"
+    IMAGE="$DOCKERHUB_USER/dropinslovenia_frontend:latest"
     CONTAINER="frontend"
     PORT_MAPPING="3001:3001"
     ;;
   "backend")
-    IMAGE="$DOCKERHUB_USER/backend:latest"
+    IMAGE="$DOCKERHUB_USER/dropinslovenia_backend:latest"
     CONTAINER="backend"
     PORT_MAPPING="3000:3000"
     ;;
   "kotlin-server")
-    IMAGE="$DOCKERHUB_USER/kotlin-server:latest"
+    IMAGE="$DOCKERHUB_USER/dropinslovenia_kotlin-server:latest"
     CONTAINER="kotlin-server"
     PORT_MAPPING="8080:8080"
     ;;
@@ -695,14 +701,16 @@ cat /var/log/deploy.log
 
 
 📸 *Slika: Ročni test skripte — terminal z outputom in `docker ps` po zagonu*
-`[VSTAVI SLIKO TUKAJ]`
+![alt text](slike2/image.png)
+
+![alt text](slike2/image-1.png)
 
 
 ---
 
 
 ### 3.3 Webhook konfiguracija in systemd servis
-*Avtor: Matija Dukarić (konfiguracija), Maj Donko (systemd servis)*
+*Avtor*
 
 
 **Struktura `hooks.json`:** Vsak hook objekt ima:
@@ -723,14 +731,14 @@ cat /var/log/deploy.log
   {
     "id": "deploy-frontend",
     "execute-command": "/opt/deploy/deploy.sh",
-    "command-working-directory": "/home/azureuser",
+    "command-working-directory": "/home/dropInSloveniaVM/dropinslovenia",
     "pass-arguments-to-command": [
-      { "source": "payload", "name": "service" }
+      { "source": "payload", "name": "data.service" }
     ],
     "trigger-rule": {
       "match": {
         "type": "payload-hmac-sha256",
-        "secret": "VAŠ_WEBHOOK_SECRET_TUKAJ",
+        "secret": "*********",
         "parameter": {
           "source": "header",
           "name": "X-Hub-Signature-256"
@@ -741,14 +749,14 @@ cat /var/log/deploy.log
   {
     "id": "deploy-backend",
     "execute-command": "/opt/deploy/deploy.sh",
-    "command-working-directory": "/home/azureuser",
+    "command-working-directory": "/home/dropInSloveniaVM/dropinslovenia",
     "pass-arguments-to-command": [
-      { "source": "payload", "name": "service" }
+      { "source": "payload", "name": "data.service" }
     ],
     "trigger-rule": {
       "match": {
         "type": "payload-hmac-sha256",
-        "secret": "VAŠ_WEBHOOK_SECRET_TUKAJ",
+        "secret": "******",
         "parameter": {
           "source": "header",
           "name": "X-Hub-Signature-256"
@@ -759,14 +767,14 @@ cat /var/log/deploy.log
   {
     "id": "deploy-kotlin",
     "execute-command": "/opt/deploy/deploy.sh",
-    "command-working-directory": "/home/azureuser",
+    "command-working-directory": "/home/dropInSloveniaVM/dropinslovenia",
     "pass-arguments-to-command": [
-      { "source": "payload", "name": "service" }
+      { "source": "payload", "name": "data.service" }
     ],
     "trigger-rule": {
       "match": {
         "type": "payload-hmac-sha256",
-        "secret": "VAŠ_WEBHOOK_SECRET_TUKAJ",
+        "secret": "************",
         "parameter": {
           "source": "header",
           "name": "X-Hub-Signature-256"
@@ -775,16 +783,6 @@ cat /var/log/deploy.log
     }
   }
 ]
-```
-
-
-> Zamenjaj `VAŠ_WEBHOOK_SECRET_TUKAJ` z istim stringom ki si ga vpisal v GitHub Secret `WEBHOOK_SECRET`.
-
-
-```bash
-sudo mkdir -p /etc/webhook
-sudo nano /etc/webhook/hooks.json
-# (prilepi vsebino zgoraj, zamenjaj secret)
 ```
 
 
@@ -799,7 +797,7 @@ After=network.target docker.service
 
 
 [Service]
-User=azureuser
+User=dropInSloveniaVM
 ExecStart=/usr/bin/webhook -hooks /etc/webhook/hooks.json -port 9000 -verbose
 # -verbose: izpisuje loge vsakega klica — koristno za debugging
 Restart=always
@@ -815,9 +813,6 @@ WantedBy=multi-user.target
 
 
 ```bash
-sudo nano /etc/systemd/system/webhook.service
-# (prilepi vsebino zgoraj)
-
 
 # Reload systemd da zazna novo datoteko
 sudo systemctl daemon-reload
@@ -826,10 +821,8 @@ sudo systemctl daemon-reload
 # Omogoči samodejni zagon ob startu
 sudo systemctl enable webhook
 
-
 # Zaženi takoj
 sudo systemctl start webhook
-
 
 # Preveri status
 sudo systemctl status webhook
@@ -845,76 +838,19 @@ curl http://<PUBLIC_IP>:9000/hooks/deploy-backend
 # Napačen podpis (ali brez podpisa) = zavrnjena zahteva
 ```
 
-
-📸 *Slika: `systemctl status webhook` — active (running)*
+*Slika: `systemctl status webhook` — active (running)*
 `[VSTAVI SLIKO TUKAJ]`
 
 
 ---
 
-
-### 3.4 Test celotnega pipeline
-*Avtor: Maj Donko, Luka Manfreda, Matija Dukarić*
-
-
-Ko je vse nastavljeno, testiramo celoten tok od kode do produkcije. Vsak član naredi commit in push v svojem repozitoriju.
-
-
-**Potek testa korak za korakom:**
-
-
-```
-1. Naredi spremembo in pushaj (katerikoli repozitorij)
-   git add .
-   git commit -m "test: CI/CD pipeline test"
-   git push origin main
-
-
-2. Opazuj GitHub Actions (https://github.com/DropInSlovenia/<repo>/actions)
-   - Vidiš workflow ki se je sprožil
-   - Job 1 (build-and-push): ~3 minute (Kotlin ~10 min)
-   - Job 2 (notify-server): ~10 sekund
-
-
-3. Preveri Docker Hub (https://hub.docker.com/u/dropinslovenia)
-   - Odpri ustrezni repozitorij
-   - Timestamp "Last pushed" mora biti svež (pred minutami)
-
-
-4. Preveri na VM:
-   ssh azureuser@<PUBLIC_IP>
-   cat /var/log/deploy.log        # Svež deploy log z aktualnim časom
-   docker ps                       # CREATED čas mora biti svež (pred minutami)
-```
-
-
-**Odpravljanje težav:**
-- Če GitHub Actions workflow ne uspe: klikni na rdeči X, preberi log napake
-- Če webhook ne pride do VM: preveri `sudo systemctl status webhook` na VM, preveri NSG pravilo za port 9000
-- Če deploy skripta ne zažene containerja: preberi `/var/log/deploy.log` za podrobnosti
-
-
-📸 *Slika: GitHub Actions — oba joba zelena (build + notify)*
-`[VSTAVI SLIKO TUKAJ]`
-
-
-📸 *Slika: Docker Hub — nova slika z novim časovnim žigom po pushu*
-`[VSTAVI SLIKO TUKAJ]`
-
-
-📸 *Slika: `/var/log/deploy.log` na VM — vidni deploy logi*
-`[VSTAVI SLIKO TUKAJ]`
-
-
-📸 *Slika: `docker ps` na VM — container ima svež CREATED časovni žig*
-`[VSTAVI SLIKO TUKAJ]`
 
 
 ---
 
 
 ## 4. Varnost pri Webhookih
-*Avtor dokumentacije: Maj Donko | Avtor implementacije: Matija Dukarić*
+*Avtor*
 
 
 ### 4.1 Identificirane varnostne luknje
@@ -1017,22 +953,3 @@ sudo ufw status verbose
 
 ---
 
-
-## Morebitne težave in rešitve
-
-
-| Težava | Vzrok | Rešitev |
-|--------|-------|---------|
-| GitHub Actions workflow ne uspe pri `build-and-push` | Napačen `DOCKERHUB_TOKEN` secret | Regeneriraj access token na Docker Hub in posodobi secret |
-| Webhook ne pride do VM (job 2 rdeč) | Port 9000 zaprt v NSG ali webhook servis ne teče | Preveri NSG pravilo za port 9000; `systemctl status webhook` na VM |
-| Deploy skripta ne zamenja containerja | Container z istim imenom že teče in `docker run` vrne napako | Preveri da `docker stop` in `docker rm` uspešno delujeta ročno |
-| `docker pull` v deploy skripti vrne `unauthorized` | VM ni prijavljen v Docker Hub | Za javne slike `docker pull` ne zahteva prijave — preveri ime slike |
-| `.env` manjka na VM po rebootu | `.env` je bil ustvarjen ročno in se ne obnovi samodejno | Ustvari `/home/azureuser/.env` ročno po vsakem rebootu VM ali shrani v varno lokacijo |
-| Kotlin build traja >15 minut v GitHub Actions | Gradle prenaša vse odvisnosti vsakič znova | Dodaj `actions/cache` za `.gradle` mapo v workflow — opcijsko |
-| [Opiši svojo težavo] | [Opiši vzrok] | [Opiši rešitev] |
-
-
----
-
-
-*Poročilo P3 — DropInSlovenia | Maj 2026*
