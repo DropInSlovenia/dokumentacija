@@ -710,21 +710,9 @@ cat /var/log/deploy.log
 
 
 ### 3.3 Webhook konfiguracija in systemd servis
-*Avtor*
-
-
-**Struktura `hooks.json`:** Vsak hook objekt ima:
-- `id` — del URL poti (`/hooks/<id>`). GitHub Actions pošlje zahtevo na ta URL.
-- `execute-command` — skripta ki se zažene ob uspešnem klicu
-- `pass-arguments-to-command` — prenese vrednost `service` iz JSON payload-a kot argument `$1` skripti. Payload je `{"service": "frontend"}` ki ga pošlje GitHub Actions.
-- `trigger-rule` z HMAC-SHA256 — webhook se sproži SAMO če je zahteva podpisana s pravilnim secretom. GitHub Actions podpiše vsak request z `WEBHOOK_SECRET` — webhook strežnik preveri ta podpis.
-
-
-**Zakaj systemd?** Webhook strežnik mora teči ves čas, tudi po rebootu VM. `systemctl enable webhook` registrira servis za samodejni zagon ob startu sistema. `Restart=always` zagotovi da se servis restarata ob morebitni napaki.
-
+*Luka Manfreda*
 
 **Datoteka `/etc/webhook/hooks.json`:**
-
 
 ```json
 [
@@ -811,43 +799,16 @@ StandardError=journal
 WantedBy=multi-user.target
 ```
 
-
-```bash
-
-# Reload systemd da zazna novo datoteko
-sudo systemctl daemon-reload
-
-
-# Omogoči samodejni zagon ob startu
-sudo systemctl enable webhook
-
-# Zaženi takoj
-sudo systemctl start webhook
-
-# Preveri status
-sudo systemctl status webhook
-# Mora pisati: Active: active (running)
-```
-
-
-**Test webhook strežnika** (katerikoli član s svojega računalnika):
-```bash
-curl http://<PUBLIC_IP>:9000/hooks/deploy-backend
-# Pričakovan odgovor: "Hook rules were not satisfied."
-# To je OK! Pomeni da hook deluje, ampak zahteva pravilni HMAC podpis.
-# Napačen podpis (ali brez podpisa) = zavrnjena zahteva
-```
-
 *Slika: `systemctl status webhook` — active (running)*
-`[VSTAVI SLIKO TUKAJ]`
+![alt text](slike2/webhookStatus1.png)
+![alt text](slike2/webhookStatus2.png)
+![alt text](slike2/webhookCurl.png)
 
 
 ---
 
 
-
 ---
-
 
 ## 4. Varnost pri Webhookih
 *Avtor*
