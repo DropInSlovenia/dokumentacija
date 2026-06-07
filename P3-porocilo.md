@@ -811,44 +811,33 @@ WantedBy=multi-user.target
 ---
 
 ## 4. Varnost pri Webhookih
-*Avtor*
+*Luka Manfreda*
 
 
 ### 4.1 Identificirane varnostne luknje
 
 
 **Luknja 1: Webhook URL je javno dostopen brez avtentikacije**
-> Kdorkoli ki pozna IP in port 9000 lahko pošlje HTTP zahtevo. Brez zaščite bi napadalec s primerno zahtevo sprožil deploy kadarkoli — kar bi povzročilo restart servisov ali naložitev zlonamerne slike.
-*Rešitev:* HMAC-SHA256 podpis — GitHub podpiše vsak request s secretom, webhook strežnik podpis preveri preden zažene skripto. Brez veljavnega podpisa se skripta ne izvede. **Že implementirano v `hooks.json`.**
+HMAC-SHA256 podpis — GitHub podpiše vsak request s secretom, webhook strežnik podpis preveri preden zažene skripto. Brez veljavnega podpisa se skripta ne izvede.
 
 
 **Luknja 2: HTTP namesto HTTPS**
-> Webhook komunikacija poteka po nešifriranem HTTP. Napadalec na omrežju med GitHub in VM (man-in-the-middle) bi videl vsebino zahtev. Čeprav je payload podpisan z HMAC (kar ščiti pred manipulacijo), bi napadalec videl kdaj in za kateri servis se sprožijo deployi — koristna informacija za načrtovanje napada.
-*Rešitev:* Dodati TLS certifikat prek nginx reverse proxy in Let's Encrypt (`certbot`). Za to nalogo ni zahtevano, je pa priporočljivo v produkciji.
+Dodan TLS certifikat prek nginx reverse proxy in Let's Encrypt (`certbot`). Za to nalogo ni zahtevano, je pa priporočljivo v produkciji.
 
 
 **Luknja 3: Deploy skripta teče s pravicami `azureuser` ki ima dostop do `.env`**
-> Skripta bere `/home/azureuser/.env` ki vsebuje MongoDB URI in JWT secret. Napadalec ki bi uspešno sprožil webhook bi izvedel skripto ki dostopa do vseh teh skrivnosti. Prav tako ima `azureuser` dostop do Dockerja — s privileji Dockerja je mogoče eskalirati na root.
+
 *Rešitev:* Ločen `deployer` user z minimalnimi pravicami:
 ```bash
 sudo useradd -r -s /bin/bash deployer
 sudo usermod -aG docker deployer
-# Webhook servis poženemo kot 'deployer' — spremenimo User= v webhook.service
 ```
-
 
 **Luknja 4: Webhook secret je v `hooks.json` v čistem tekstu**
-> Vsakdo z SSH dostopom do VM (vsi 3 člani) vidi secret. Hkrati je datoteka berljiva z `sudo cat` brez posebnih pravic.
 *Rešitev:* Branje secreta iz environment spremenljivke:
 ```bash
-# V /etc/systemd/system/webhook.service dodamo:
 Environment=WEBHOOK_SECRET=vrednost_iz_openssl
-# V hooks.json pa spremenimo:
-# "secret": "${WEBHOOK_SECRET}"
-# Tako se secret ne shranjuje v nobeni konfiguraciji datoteki
 ```
-
-
 ---
 
 
@@ -858,20 +847,16 @@ Environment=WEBHOOK_SECRET=vrednost_iz_openssl
 **HMAC-SHA256 podpis (implementirano v hooks.json):**
 
 
-HMAC (Hash-based Message Authentication Code) deluje takole:
+HMAC (Hash-based Message Authentication Code) deluje tako:
 1. GitHub Actions zna naš `WEBHOOK_SECRET`
 2. Ob vsakem webhook klicu GitHub izračuna SHA-256 hash payload-a XOR z secretom
 3. Ta podpis doda v `X-Hub-Signature-256` HTTP header
 4. Webhook strežnik na VM izračuna isti podpis in ga primerja
-5. Če se podpisa ujemata → zahteva je legitimna, skripta se zažene
-6. Če se ne ujemata → zahteva se zavrne, skripta se NE zažene
-
-
-Brez poznavanja secreta je nemogoče ustvariti veljaven podpis — napad je matematično nemogoč.
+5. Če se podpisa ujemata -> zahteva je legitimna, skripta se zažene
+6. Če se ne ujemata -> zahteva se zavrne, skripta se NE zažene
 
 
 **UFW Firewall — omejitev porta 9000 samo na GitHub IP naslove (implementirano):**
-
 
 ```bash
 # Najprej preverimo da je UFW nameščen
@@ -905,12 +890,9 @@ sudo ufw status verbose
 ```
 
 
-> **Opomba:** GitHub IP naslovi se občasno spremenijo. Aktualni seznam je vedno na https://api.github.com/meta pod `actions` ključem. Ob morebitnih problemih s webhookom v prihodnosti preveri ali so IP-ji še veljavni.
-
-
 📸 *Slika: `sudo ufw status` z vidnimi firewall pravili*
-`[VSTAVI SLIKO TUKAJ]`
 
+![alt text](slike2/ufwStatus.png)
 
 ---
 
