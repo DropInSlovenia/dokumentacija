@@ -103,7 +103,7 @@ Razvijalec naredi spremembo v kodi
 
 
 ### 1.2 CLI ukazi za container registry
-*Avtor:*
+*Avtor: Maj Donko*
 
 
 Dokumentirani ukazi in razlaga:
@@ -169,7 +169,7 @@ V vsakem repozitoriju imamo **dva tipa workflow datotek** v mapi `.github/workfl
 
 
 ### 2.1 GitHub Secrets
-*Avtor:*
+*Avtor: Matija Dukarić*
 
 
 **Kaj so GitHub Secrets?** GitHub Secrets so šifrirane spremenljivke shranjene v GitHub repozitoriju. V workflow YAML datotekah jih referenciramo z `${{ secrets.IME }}`. Vrednosti so šifrirane in nikoli vidne v logih — niti lastniku repozitorija po shranitvi.
@@ -193,7 +193,7 @@ Za vsak repozitorij (frontend, backend, kotlin-server) nastavi secrets:
 
 
 ### 2.2 Sprotna integracija nad razvojno vejo — testiranje enot
-*Avtor:*
+*Avtor: Maj Donko*
 
 
 To poglavje pokriva **prvo zahtevo naloge**: sprotno integracijo nad razvojno vejo (`dev`) z avtomatskim testiranjem enot in poročanjem.
@@ -373,7 +373,7 @@ Backend
 
 
 ### 2.3 Workflow — Frontend (produkcijska veja)
-*Avtor*
+*Avtor: Maj Donko*
 
 
 **Kaj je GitHub Actions workflow?** Workflow je YAML datoteka v `.github/workflows/` mapi repozitorija ki opisuje avtomatizirane korake. GitHub ga samodejno zazna in izvaja ob določenih dogodkih (npr. push na main).
@@ -451,7 +451,7 @@ jobs:
 
 
 ### 2.4 Workflow — Backend (produkcijska veja)
-*Avtor*
+*Avtor: Luka Manfreda*
 
 
 Backend workflow je strukturno enak frontend workflowu z eno razliko — ni `build-args`. Backend (Node.js) bere environment spremenljivke dinamično ob zagonu z `process.env.KOTLIN_SERVER_URL` — ne med buildom. Zato ni treba ničesar vtiskati v sliko.
@@ -506,7 +506,7 @@ jobs:
 
 
 ### 2.5 Workflow — Kotlin server (produkcijska veja)
-*Avtor*
+*Avtor: Matija Dukarić*
 
 
 Kotlin workflow je enak backend workflowu. Posebnost: Gradle mora ob prvem buildu prenesti vse odvisnosti (~200 MB) kar traja **5–10 minut**. To je normalno — GitHub Actions runner nima predpomnjenega Gradle cache-a. Ob naslednjih buildih je enako počasen ker Docker vsakič začne od začetka v čistem okolju. Optimizacija bi bila dodati `actions/cache` za `.gradle` mapo — za to nalogo ni zahtevano.
@@ -567,7 +567,7 @@ jobs:
 
 
 ### 3.1 Namestitev webhook strežnika
-*Avtor*
+*Avtor: Maj Donko*
 
 
 **Kaj je `webhook` paket?** `webhook` je majhen HTTP strežnik napisan v Go ki posluša na določenem portu (pri nas 9000). Ko dobi HTTP zahtevo na `/hooks/<id>`, preveri pogoje (pri nas HMAC podpis) in zažene nastavljeno skripto. Je lahek, zanesljiv in enostaven za konfigurirati.
@@ -590,7 +590,7 @@ webhook --version
 
 
 ### 3.2 Deploy skripta
-*Avtor*
+*Avtor: Luka Manfreda*
 
 
 **Logika skripte:** Skripta sprejme ime servisa (`frontend`, `backend` ali `kotlin-server`) kot argument `$1`. `case` stavek določi ustrezno Docker sliko, ime containerja in port mapping. Nato:
@@ -890,9 +890,17 @@ sudo ufw status verbose
 ```
 
 
-📸 *Slika: `sudo ufw status` z vidnimi firewall pravili*
+*Slika: `sudo ufw status` z vidnimi firewall pravili*
 
 ![alt text](slike2/ufwStatus.png)
 
 ---
 
+
+
+---
+## 4. Jira sprint in taski
+
+![alt text](slike2/jira.png)
+
+---
