@@ -98,7 +98,7 @@ gantt
 
     section Zaključek (P2 / P3)
     Docker + Azure VM (P2)               :done,    dep,  2025-05-26, 2025-06-15
-    CI/CD: Docker Hub + Actions + webhook (P3) :done, cicd, 2025-06-01, 2025-06-20
+    CI-CD Docker Hub + Actions + webhook (P3) :done, cicd, 2025-06-01, 2025-06-20
     Testiranje in odprava napak          :active,  test, 2025-06-02, 2025-06-25
     Dokumentacija in zagovor             :         doc,  2025-06-16, 2025-06-30
 ```
@@ -448,7 +448,7 @@ classDiagram
         +Date createdAt
         +Date updatedAt
         +comparePassword(candidate) Boolean
-        +findByEmail(email)$ User
+        +findByEmail(email) User$
     }
 
     class Trip {
@@ -532,7 +532,7 @@ classDiagram
         +string _id
         +string title
         +string description
-        +User|string owner
+        +User owner
         +Stop[] stops
         +boolean isPublic
         +ActiveSession activeSession
@@ -838,13 +838,22 @@ ALTERNATIVA za izris diagramov poteka (če ne uporabljate Mermaid):
 
 **Testna ogrodja (CI nad razvojno vejo):**
 
-| Komponenta | Veja sprožilca | Ogrodje | Kaj se testira |
+| Komponenta | Veja sprožilca | Ogrodje | Stanje |
 |---|---|---|---|
-| Backend | `development` | vgrajeni `node:test` | OSRM → GeoJSON pretvorba (`osrmToGeoJSON`), `asyncHandler` |
-| Frontend | `dev` | `vitest` + `jsdom` | shranjevanje/branje access tokena (`tokens.ts`) |
-| Kotlin | `dev` | `kotlin.test` (Gradle `jvmTest`) | logika v `composeApp` |
+| Backend | `development` (+ PR v `development`/`main`) | vgrajeni `node --test` | Testni *workflow* pripravljen; **dejanskih unit testov v repozitoriju (še) ni** (kandidata: `utils/osrmToGeoJSON.js`, `utils/asyncHandler.js`) |
+| Frontend | `dev` (+ PR v `dev`/`main`) | ESLint + `vitest` (`--passWithNoTests`) | Lint in testni okvir pripravljena; **unit testov (še) ni** (kandidat: `lib/utils/tokens.ts`) |
+| Kotlin | `dev` (+ PR) | `kotlin.test` prek `./gradlew jvmTest` | Obstaja test `composeApp/src/jvmTest/.../ComposeAppDesktopTest.kt` |
 
 Rezultati se objavijo prek `dorny/test-reporter` v zavihku **Checks** (JUnit XML).
+
+> **🔧 DOPOLNI (testi):** Backend in frontend imata pripravljen CI testni *workflow*, a v
+> repozitorijih (preverjeno na vejah `development`/`dev`/`main`) **ni dejanskih datotek z unit
+> testi** — `node --test` ne najde ničesar, `vitest` teče z `--passWithNoTests`, `jsdom` ni
+> niti med odvisnostmi. Izberi eno:
+> - **(a)** dodaj prave teste (npr. `backend/utils/osrmToGeoJSON.test.js`,
+>   `frontend/lib/utils/tokens.test.ts`) in to tabelo posodobi nazaj na "kaj se testira", ali
+> - **(b)** pusti opis kot je zgoraj — pošteno pove, da je testna infrastruktura postavljena,
+>   testi pa so v pripravi. Kotlin že ima delujoč `jvmTest`.
 
 ---
 ---
@@ -987,7 +996,7 @@ Deploy prek webhooka je posebej zaščiten, saj sproži spremembe v produkciji:
   satisfied."* (zahteva veljaven podpis).
 - **Docker Hub Access Token** namesto gesla (omejene pravice, takojšen preklic).
 - **GitHub Secrets** za vse poverilnice (nikoli v YAML/git).
-
+Developer: Reload Window
 **Znane luknje in priporočene izboljšave (analiza iz P3):**
 
 | Luknja | Tveganje | Predlagana rešitev |
