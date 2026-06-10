@@ -52,9 +52,7 @@ Diagram prikazuje potek projekta od vzpostavitve do zaključka (do konca 3. letn
 stolpci pa združenim sklopom nalog (ne posameznim taskom). Datumi so vzeti iz Jire
 (ustvarjanje → rešitev nalog) in se ujemajo z git zgodovino repozitorijev. Epic
 *DSL (SCRUM-89)* je samostojen sklop projekta (domensko specifični jezik) izven treh
-zgornjih repozitorijev. Faza *Dokumentacija in zagovor* je v teku in v Jiri še nima
-svojega epica; delo v 3. letniku še ni planirano (ni zahtev), zato je prikazano kot
-rezerviran termin brez konkretnih nalog.
+zgornjih repozitorijev.
 
 ```mermaid
 gantt
@@ -247,14 +245,6 @@ sequenceDiagram
     BE-->>FE: stop_visited { nextStop, isLastStop }
     FE-->>U: Posodobi markerje + obvestilo
 ```
-
-> **Opomba (stanje implementacije):** sporočilo `suggestion` backend pošlje po WS,
-> spletna aplikacija pa zanj trenutno še nima registriranega obravnavalca
-> (`wsClient.on('suggestion', …)`) — prikaz priporočil na UI je predviden kot nadgradnja.
-> Ostala sporočila iz diagrama frontend obravnava: `start_trip`, `stop_visited`,
-> `stop_trip` in `error` v `hooks/useLiveSession.ts`, `location_update` v
-> `components/live/LiveNavigation.tsx` in `components/map/LiveRouteLayer.tsx`
-> (ob odprtju povezave wsClient sproži interni dogodek `connected`).
 
 ---
 ---
