@@ -4,8 +4,10 @@
 > - Vsi diagrami so napisani v **Mermaid** DSL. Na **GitHubu** (in v VS Code z
 >   razširitvijo *Markdown Preview Mermaid*) se izrišejo samodejno. Za oddajo v PDF/Word
 >   lahko diagrame izvozite kot slike prek <https://mermaid.live> (prilepiš kodo → Export PNG/SVG).
-> - Mesta, ki jih **morate ročno dopolniti** (ni jih mogoče izpeljati iz kode), so
->   označena z `🔧 DOPOLNI:` in HTML komentarjem `<!-- ... -->`.
+> - Ganttov diagram je izdelan iz **dejanskega Jira exporta** (`Jira.xml`, 141 zadev,
+>   projekt SCRUM/DropInSlovenia); naloge so strnjene po epicih v fazni plan.
+> - Razredni diagrami so izpeljani **neposredno iz izvorne kode** (backend, frontend,
+>   PrincipiProjekt/desktopApp) — polja, metode in relacije ustrezajo dejanskemu stanju.
 > - Tehnična referenca z vso vsebino projekta je v ločenem fajlu
 >   [`PROJEKT-REFERENCA.md`](./PROJEKT-REFERENCA.md).
 
@@ -32,8 +34,6 @@
 
 **Projektna dokumentacija**
 
-<!-- 🔧 DOPOLNI: po želji dodaj logotip projekta:  ![Logo](pot/do/logo.png) -->
-
 </div>
 
 <br>
@@ -42,12 +42,9 @@
 
 | # | Ime in priimek | Vloga |
 |---|---|---|
-| 1 | **Matija Dukarić** | Vodja skupine (odda nalogo); MongoDB Atlas, docker-compose, Azure VM, Docker Hub, webhook/systemd |
-| 2 | **Maj Donko** | Frontend (Next.js) Dockerfile, Azure NSG/port forwarding, GitHub Actions frontend, UFW dokumentacija |
-| 3 | **Luka Manfreda** | Backend in Kotlin Dockerfile, GitHub Actions backend, deploy skripta na VM |
-
-<!-- 🔧 DOPOLNI: če je v skupini še kdo, ga dodaj. Vloge so povzete po poročilih P2/P3 — po želji prilagodi. -->
-
+| 1 | **Matija Dukarić** | Vodja skupine (odda nalogo); backend (Trip API, WS), MongoDB Atlas, Azure VM, docker-compose, Docker Hub, webhook/systemd, Kotlin admin (Trips, Generator) |
+| 2 | **Maj Donko** | Frontend (Next.js — auth, mapa, paneli, profil), Kotlin admin (Users UI), GitHub Actions frontend, Azure NSG/port forwarding, UFW dokumentacija |
+| 3 | **Luka Manfreda** | Kotlin scraperji + Ktor strežnik, backend (JWT, auth middleware), DSL (lexer/parser), GitHub Actions backend, deploy skripta na VM |
 
 ### Povezave do repozitorijev
 
@@ -59,58 +56,74 @@ Koda je organizirana v GitHub organizaciji **[DropInSlovenia](https://github.com
 | Zaledni strežnik (backend) | <https://github.com/DropInSlovenia/backend> |
 | Kotlin (scraping strežnik + namizna admin aplikacija) | <https://github.com/DropInSlovenia/desktopApp> |
 
-<!-- 🔧 DOPOLNI: če imate še skupni/meta repozitorij ali monorepo, ga dodaj sem. -->
-
 ### Ganttov diagram
 
-Diagram prikazuje potek projekta od vzpostavitve do zaključka (do konca 3. letnika).
-
-> **🔧 DOPOLNI:** Spodnji Gantt je **predloga** z logičnim zaporedjem faz. Popravi
-> **datume** (`YYYY-MM-DD`), trajanja in dodeljene osebe tako, da ustrezajo vašemu
-> dejanskemu poteku. Mermaid Gantt se izriše na GitHubu; za sliko uporabi mermaid.live.
+Diagram prikazuje potek projekta **od vzpostavitve (marec 2026) do konca 3. letnika
+(junij 2027)**. Faze 2. letnika so strnjene po Jira epicih (SCRUM-5 backend,
+SCRUM-11 namizna aplikacija, SCRUM-28 setup, SCRUM-88 infrastruktura, SCRUM-89 DSL,
+SCRUM-90 spletni vmesnik); datumi so vzeti iz dejanskih datumov ustvarjanja in
+zaključka nalog v Jiri. Za 3. letnik je rezerviranih **10 praznih nalog**, ki jih
+dopolnimo, ko bo znan obseg dela.
 
 ```mermaid
 gantt
-    title DropInSlovenia — časovnica projekta
+    title DropInSlovenia — časovnica projekta (2. in 3. letnik)
     dateFormat  YYYY-MM-DD
     axisFormat  %m/%y
 
     section Zagon projekta
-    Idejna zasnova in specifikacije      :done,    spec, 2025-02-17, 2025-03-09
-    Vzpostavitev repozitorijev in CI      :done,    repo, 2025-03-03, 2025-03-16
+    Idejna zasnova in izbira virov (SCRUM-7)              :done, vir,   2026-03-23, 2026-04-19
+    Repozitoriji, Jira-GitHub, specifikacije (SCRUM-28)   :done, setup, 2026-04-16, 2026-05-08
 
-    section Kotlin (scraping + admin)
-    Scraperji dogodkov (6 mest)          :done,    scr,  2025-03-10, 2025-04-06
-    Wikipedia + Google Places            :done,    ext,  2025-03-24, 2025-04-13
-    Ktor strežnik (API 8080)             :done,    ktor, 2025-04-07, 2025-04-20
-    Namizna admin aplikacija (Compose)   :done,    desk, 2025-04-14, 2025-05-11
+    section Kotlin (SCRUM-11)
+    Postavitev projekta in Google Places API              :done, kt1, 2026-04-06, 2026-04-23
+    Scraperji dogodkov 6 mest in Wikipedia                :done, kt2, 2026-04-16, 2026-04-21
+    Compose Desktop admin (Users, Trips, Scraper, Generator) :done, kt3, 2026-05-05, 2026-05-13
 
-    section Backend (Node.js)
-    Avtentikacija (JWT) in uporabniki    :done,    auth, 2025-03-17, 2025-04-06
-    CRUD potovanja + geo iskanje         :done,    trip, 2025-04-07, 2025-04-27
-    Integracije (OSRM, Overpass, Kotlin) :done,    intg, 2025-04-21, 2025-05-11
-    WebSocket živo vodenje               :done,    ws,   2025-05-05, 2025-05-25
+    section Backend (SCRUM-5)
+    Okolje, User model, JWT avtentikacija                 :done, be1, 2026-04-23, 2026-05-01
+    Trip model, CRUD in geo iskanje                       :done, be2, 2026-04-24, 2026-05-08
+    WS živo vodenje in OSRM napotki                       :done, be3, 2026-04-24, 2026-05-17
+    GeoJSON, places, popravki in izboljšave               :done, be4, 2026-05-14, 2026-05-30
 
-    section Frontend (Next.js)
-    Zemljevid + paneli iskanja           :done,    map,  2025-04-07, 2025-05-04
-    Načrtovanje potovanj (UI)            :done,    plan, 2025-05-05, 2025-05-25
-    Živa navigacija (overlay)            :done,    live, 2025-05-19, 2025-06-08
+    section DSL (SCRUM-89)
+    BNF gramatika, lexer, parser, AST, pretty-printer     :done, dsl1, 2026-05-13, 2026-05-28
+    Validator, GeoJSON exporter, OSRM, testni primeri     :done, dsl2, 2026-05-26, 2026-05-31
 
-    section Zaključek (P2 / P3)
-    Docker + Azure VM (P2)               :done,    dep,  2025-05-26, 2025-06-15
-    CI-CD Docker Hub + Actions + webhook (P3) :done, cicd, 2025-06-01, 2025-06-20
-    Testiranje in odprava napak          :active,  test, 2025-06-02, 2025-06-25
-    Dokumentacija in zagovor             :         doc,  2025-06-16, 2025-06-30
+    section Frontend (SCRUM-90)
+    Struktura, axios in JWT, auth strani, profil          :done, fe1, 2026-05-16, 2026-05-22
+    Leaflet mapa, paneli, TripEditor                      :done, fe2, 2026-05-18, 2026-05-23
+    WS klient, GPS streaming, LiveNavigation              :done, fe3, 2026-05-18, 2026-05-30
+    UX popravki, aktivni izlet, ogledi                    :done, fe4, 2026-05-22, 2026-06-07
+
+    section Infrastruktura in CI/CD (SCRUM-88)
+    Dockerfile-i, docker-compose, lokalni test            :done, inf1, 2026-05-13, 2026-05-24
+    Azure VM, SSH, NSG, swap, MongoDB Atlas               :done, inf2, 2026-05-13, 2026-05-24
+    Docker Hub, GitHub Actions, webhook deploy, UFW       :done, inf3, 2026-05-28, 2026-06-07
+
+    section Zaključek 2. letnika
+    Dokumentacija in zagovor                              :active, doc, 2026-06-08, 2026-06-26
+
+    section 3. letnik (rezervirano)
+    Naloga 1 (dopolni)                                    :t1,  2026-10-01, 21d
+    Naloga 2 (dopolni)                                    :t2,  2026-10-22, 21d
+    Naloga 3 (dopolni)                                    :t3,  2026-11-12, 21d
+    Naloga 4 (dopolni)                                    :t4,  2026-12-03, 21d
+    Naloga 5 (dopolni)                                    :t5,  2027-01-07, 21d
+    Naloga 6 (dopolni)                                    :t6,  2027-01-28, 21d
+    Naloga 7 (dopolni)                                    :t7,  2027-02-18, 21d
+    Naloga 8 (dopolni)                                    :t8,  2027-03-11, 21d
+    Naloga 9 (dopolni)                                    :t9,  2027-04-01, 21d
+    Naloga 10 (dopolni)                                   :t10, 2027-04-22, 21d
+    Zaključek projekta in končni zagovor                  :milestone, konec, 2027-06-15, 0d
 ```
 
 <!--
-ALTERNATIVA: če Mermaid Gantt ni dovoljen / ga ne želite, lahko enak diagram
-naredite v: GanttProject (brezplačen), MS Project, Excel, Notion ali draw.io.
-Koraki za mermaid.live:
-  1) odpri https://mermaid.live
-  2) prilepi zgornjo kodo (od 'gantt' do konca)
-  3) popravi datume
-  4) Actions -> Export PNG/SVG -> vstavi sliko v končno poročilo
+Opombe za vzdrževanje Gantta:
+  • Faza "Idejna zasnova" se je začela pred prvim Jira vnosom (Jira export pokriva
+    zadnjih 90 dni); začetni datum 2026-03-23 po potrebi prilagodi.
+  • Nalogo 1–10 v sekciji "3. letnik" preimenuj, ko bodo znane naloge naslednjega leta.
+  • Za sliko: https://mermaid.live → prilepi kodo → Actions → Export PNG/SVG.
 -->
 
 ---
@@ -194,11 +207,14 @@ sequenceDiagram
     alt Geslo napačno ali uporabnik ne obstaja
         BE-->>FE: 401 { error: "Napačen email ali geslo" }
         FE-->>U: Prikaz napake
+    else Račun deaktiviran (isActive = false)
+        BE-->>FE: 403 { error: "Račun je deaktiviran" }
+        FE-->>U: Prikaz napake
     else Uspešna prijava
         BE->>BE: Generiraj accessToken (15 min) + refreshToken (7 dni)
         BE->>DB: Shrani refreshToken k uporabniku
         BE-->>FE: 200 { accessToken, refreshToken, user }
-        FE->>FE: Shrani žetone, posodobi authStore
+        FE->>FE: writeToken(accessToken), authStore.setUser(user)
         FE-->>U: Preusmeritev v aplikacijo (zemljevid)
     end
 ```
@@ -248,7 +264,7 @@ sequenceDiagram
     BE-->>FE: welcome
     FE->>BE: { type: "start_trip", tripId, profile }
     BE->>DB: Naloži Trip, nastavi activeSession.isActive = true
-    BE-->>FE: start_trip { firstStop, currentStopIndex }
+    BE-->>FE: start_trip { firstStop, currentStopIndex, totalStops }
 
     loop Ob vsakem GPS popravku
         FE->>BE: location_update { tripId, location:[lon,lat] }
@@ -265,16 +281,9 @@ sequenceDiagram
     U->>FE: Klikne "Obiskano"
     FE->>BE: mark_stop_visited { stopId }
     BE->>DB: stop.visitedAt = now, currentStopIndex++
-    BE-->>FE: stop_visited { nextStop, isLastStop }
+    BE-->>FE: stop_visited { nextStop, newCurrentStopIndex, isLastStop }
     FE-->>U: Posodobi markerje + obvestilo
 ```
-
-<!--
-🔧 DOPOLNI (neobvezno): če želite prikazati še drug primer namesto enega zgornjega,
-sta dobri alternativi:
-  • UC – Ustvari potovanje (POST /api/trips, owner-check, sanitizeStops)
-  • UC – Dogodki v mestu (GET /api/events/:city → Kotlin Selenium scraper)
--->
 
 ---
 ---
@@ -327,14 +336,6 @@ graph TB
     KT -->|"HTTPS"| WIKI
     KT -->|"Selenium + Ksoup"| TUR
 ```
-
-<!--
-ALTERNATIVA za izris arhitekture (če ne uporabljate Mermaid):
-  • draw.io (diagrams.net) — brezplačen, izvoz PNG/SVG
-  • Excalidraw — za bolj "skiciran" videz
-  • Lucidchart
-Vsebina ostane enaka: 3 komponente + zunanji viri + puščice s protokoli.
--->
 
 ## 3.2 Tehnologije
 
@@ -410,7 +411,7 @@ Vsebina ostane enaka: 3 komponente + zunanji viri + puščice s protokoli.
 |---|---|
 | `next`, `react` | SSR/komponentno ogrodje (App Router, React 19). |
 | `leaflet` + `react-leaflet` | Odprtokoden interaktivni zemljevid (brez plačljivih kvot). |
-| `zustand` | Minimalen state management (storei po domeni). |
+| `zustand` | Minimalen state management (4 storei po domeni). |
 | `axios` | Enoten HTTP klient z interceptorji (JWT + samodejni refresh ob 401). |
 | `tailwindcss` | Utility-first CSS za hiter razvoj UI. |
 
@@ -429,13 +430,19 @@ Vsebina ostane enaka: 3 komponente + zunanji viri + puščice s protokoli.
 
 ## 3.4 Razredni diagrami
 
-Ker projekt uporablja **tri programske jezike**, podajamo ločen razredni diagram za vsakega.
+Ker projekt uporablja **tri programske jezike** (JavaScript, TypeScript, Kotlin),
+podajamo ločen razredni diagram za vsakega. Diagrami so izpeljani neposredno iz
+izvorne kode in prikazujejo dejanska polja, metode in relacije.
 
-### 3.4.1 Backend (Node.js — Mongoose modeli in servisi)
+### 3.4.1 Backend (Node.js — Mongoose modeli, servisi, middleware)
+
+Backend je modulski (CommonJS); servisi in middleware so prikazani kot razredi z
+javnimi funkcijami, ki jih modul izvaža (`module.exports`).
 
 ```mermaid
 classDiagram
     class User {
+        <<Mongoose model>>
         +ObjectId _id
         +String email
         +String passwordHash
@@ -447,11 +454,12 @@ classDiagram
         +ObjectId[] trips
         +Date createdAt
         +Date updatedAt
-        +comparePassword(candidate) Boolean
+        +comparePassword(candidatePassword) Boolean
         +findByEmail(email) User$
     }
 
     class Trip {
+        <<Mongoose model>>
         +ObjectId _id
         +String title
         +String description
@@ -467,6 +475,7 @@ classDiagram
     }
 
     class Stop {
+        <<podshema>>
         +ObjectId _id
         +String city
         +GeoPoint location
@@ -492,6 +501,7 @@ classDiagram
     }
 
     class TokenService {
+        <<servis>>
         +generateAccessToken(payload) String
         +generateRefreshToken(payload) String
         +verifyAccessToken(token) Object
@@ -499,154 +509,279 @@ classDiagram
     }
 
     class OsrmService {
+        <<servis>>
         +getRouteDirections(opts) Route
-        +getTripNavigationDirections(opts) Nav
-        +getNextStop(trip, msg) Stop
+        +getTripNavigationDirections(opts) Navigation
+        +getNextStop(trip, message) Stop
+        +getOrderedStops(trip) Stop[]
+        +parseCoordinate(location) Number[]
+        +normalizeCoordinates(coordinates) Number[][]
+        +normalizeProfile(profile) String
     }
 
     class NearbyPlacesService {
+        <<servis>>
+        +AMENITY_CATEGORIES Object
         +fetchNearbyPlaces(opts) Place[]
+        +buildQuery(lat, lon, radius, categories) String
         +haversine(lat1, lon1, lat2, lon2) Number
         +parseNearbyConfig(raw) Config
+        +createNearbyError(code, message) Error
+    }
+
+    class PlacesService {
+        <<servis>>
+        +resolvePlaceFromCoords(latLon) Resolved
     }
 
     class KotlinBridge {
+        <<servis>>
         +getCity(slug) City
-        +getPlaces(query) Place[]
+        +getPlaces(query) Places
+        +getPlaceDetails(placeId) Details
         +getEvents(city) Event[]
     }
 
-    User "1" o-- "*" Trip : owns
-    Trip "1" *-- "*" Stop : contains
-    Trip "1" *-- "1" ActiveSession
-    Stop "1" *-- "1" GeoPoint
-    OsrmService ..> Trip : uporablja
+    class AuthMiddleware {
+        <<middleware>>
+        +protect(req, res, next)
+        +adminOnly(req, res, next)
+        +selfOrAdmin(req, res, next)
+    }
+
+    class WsHandlers {
+        <<WebSocket>>
+        +registerWebSocketHandlers(wss)
+    }
+
+    User "1" o-- "0..*" Trip : owner, trips
+    Trip "1" *-- "1..*" Stop : stops
+    Trip "1" *-- "1" ActiveSession : activeSession
+    Stop "1" *-- "0..1" GeoPoint : location
+    AuthMiddleware ..> TokenService : verifyAccessToken
+    WsHandlers ..> OsrmService : navigacija in ETA
+    WsHandlers ..> NearbyPlacesService : bližnji POI
+    WsHandlers ..> Trip : upravlja živo sejo
+    PlacesService ..> NearbyPlacesService : OSM razrešitev
+    PlacesService ..> KotlinBridge : Google detajli
     NearbyPlacesService ..> GeoPoint : Haversine
 ```
 
-### 3.4.2 Frontend (TypeScript — tipi in Zustand storei)
+### 3.4.2 Frontend (TypeScript — tipi, Zustand storei, klienta)
 
 ```mermaid
 classDiagram
+    class User {
+        <<interface>>
+        +string _id
+        +string email
+        +string displayName
+        +string profilePicture
+        +string role
+        +boolean isActive
+        +string[] trips
+    }
+    class Stop {
+        <<interface>>
+        +string _id
+        +string city
+        +GeoJSON location
+        +string description
+        +number dayNumber
+        +number order
+        +string arrivalTime
+        +string departureTime
+        +string visitedAt
+        +string[] tags
+        +boolean isVisited
+        +boolean isNext
+    }
+    class ActiveSession {
+        <<interface>>
+        +boolean isActive
+        +string startedAt
+        +number currentStopIndex
+        +TravelProfile travelProfile
+    }
     class Trip {
+        <<interface>>
         +string _id
         +string title
         +string description
         +User owner
         +Stop[] stops
+        +string[] tags
         +boolean isPublic
+        +number viewCount
+        +number durationDays
+        +string startDate
+        +string endDate
         +ActiveSession activeSession
     }
-    class Stop {
-        +string _id
-        +string city
-        +object location
-        +number dayNumber
-        +number order
-        +string visitedAt
-        +boolean isVisited
-        +boolean isNext
-    }
-    class User {
-        +string _id
-        +string email
-        +string displayName
-        +string role
-    }
-    class ActiveSession {
-        +boolean isActive
-        +number currentStopIndex
-        +string travelProfile
-    }
 
+    class AuthStore {
+        <<Zustand>>
+        +User user
+        +setUser(user)
+        +clearUser()
+    }
     class MapStore {
-        +Trip activeTrip
+        <<Zustand>>
         +LonLat clickedLocation
+        +Trip activeTrip
+        +Place selectedPlace
+        +Poi selectedPoi
+        +setClickedLocation(loc)
         +setActiveTrip(trip)
         +updateActiveTrip(trip)
         +clearActiveTrip()
+        +setSelectedPlace(place)
+        +setSelectedPoi(poi)
     }
     class LiveStore {
+        <<Zustand>>
         +boolean isActive
         +string activeTripId
         +number currentStopIndex
+        +string currentStopId
         +GpsSignal gpsSignal
+        +number lastLat
+        +number lastLon
+        +TravelProfile travelProfile
         +setActive(tripId, profile)
-        +advanceStop(idx, stopId)
+        +setCurrentStop(index, stopId)
+        +advanceStop(newIndex, newStopId)
+        +setGpsSignal(signal)
+        +setLocation(lat, lon)
         +clear()
     }
-    class AuthStore {
-        +User user
-        +string token
-        +login()
-        +logout()
+    class UiStore {
+        <<Zustand>>
+        +boolean leftPanelOpen
+        +boolean rightPanelOpen
+        +LeftTab activeTab
+        +boolean isEditingTrip
+        +string activeTripId
+        +boolean pendingStopFromMap
+        +toggleLeftPanel()
+        +toggleRightPanel()
+        +setActiveTab(tab)
+        +setEditingTrip(id)
+        +clearEditingTrip()
+        +triggerAddStop()
+        +clearPendingStop()
     }
-    class WsClient {
+
+    class LiveSessionClient {
+        <<singleton wsClient>>
+        -WebSocket ws
+        -Map handlers
+        -number reconnectAttempts
+        +boolean isConnected
         +connect(token)
-        +startTrip(tripId, profile)
+        +disconnect()
+        +on(type, handler) unsubscribe
+        +sendLocation(lat, lon)
         +sendTripUpdate(tripId, lon, lat)
+        +startTrip(tripId, profile, fresh)
+        +stopTrip()
         +markVisited(stopId)
-        +on(type, handler)
     }
     class ApiClient {
+        <<modul lib/api>>
         +AxiosInstance api
-        +requestInterceptor() void
-        +responseInterceptor() void
-        +refreshAccessToken() string
+        +refreshAccessToken(client) string
+        +readToken() string
+        +writeToken(token)
+    }
+    class useLiveSession {
+        <<hook>>
     }
 
-    Trip "1" *-- "*" Stop
-    Trip "1" *-- "1" ActiveSession
-    MapStore o-- Trip
-    AuthStore o-- User
-    LiveStore ..> WsClient : pošilja
-    WsClient ..> LiveStore : posodablja
+    Trip "1" *-- "1..*" Stop : stops
+    Trip "1" *-- "0..1" ActiveSession
+    Trip "1" o-- "0..1" User : owner
+    AuthStore o-- User : user
+    MapStore o-- Trip : activeTrip
+    AuthStore ..> ApiClient : nalaganje profila
+    useLiveSession ..> LiveSessionClient : posluša in pošilja
+    useLiveSession ..> LiveStore : advanceStop
+    useLiveSession ..> MapStore : updateActiveTrip
+    LiveSessionClient ..> ApiClient : JWT žeton
 ```
 
-### 3.4.3 Kotlin (data modeli, servisi, UI)
+### 3.4.3 Kotlin (data modeli, repozitoriji, scraping, strežnik, UI)
 
 ```mermaid
 classDiagram
     class Trip {
+        <<data class>>
         +String id
         +String title
         +String description
         +OwnerSummary owner
         +List~Stop~ stops
+        +List~String~ tags
         +Boolean isPublic
+        +Int viewCount
+        +Int durationDays
+        +String startDate
+        +String endDate
         +ActiveSession activeSession
     }
     class Stop {
+        <<data class>>
         +String id
         +String city
         +GeoPoint location
+        +String description
         +Int dayNumber
         +Int order
+        +String arrivalTime
+        +String departureTime
         +String visitedAt
+        +List~String~ tags
+        +Boolean isVisited
+        +Boolean isNext
     }
     class GeoPoint {
+        <<data class>>
         +String type
         +List~Double~ coordinates
     }
     class ActiveSession {
+        <<data class>>
         +Boolean isActive
+        +String startedAt
         +Int currentStopIndex
         +String travelProfile
     }
+    class OwnerSummary {
+        <<data class>>
+        +String id
+        +String displayName
+        +String profilePicture
+    }
     class User {
+        <<data class>>
         +String id
         +String name
         +String email
+        +String password
         +String role
         +Boolean isActive
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
     }
     class Event {
+        <<data class>>
         +String title
         +LocalDateTime startDate
         +LocalDateTime endDate
         +String url
     }
     class CityDescription {
+        <<data class>>
         +String city
         +String description
         +String url
@@ -654,14 +789,26 @@ classDiagram
 
     class ApiService {
         <<object>>
-        +get(endpoint) Result
-        +post(endpoint, body) Result
-        +put(endpoint, body) Result
-        +deleteNoBody(endpoint) Result
+        +get(endpoint) Result~T~
+        +post(endpoint, body) Result~Res~
+        +put(endpoint, body) Result~Res~
+        +delete(endpoint) Result~T~
+        +deleteNoBody(endpoint) Result~Unit~
+        -loginAndStoreToken() String
     }
-    class GooglePlacesApi {
-        +searchAsString(query) String
-        +getPlaceDetails(id) String
+    class UserRepository {
+        <<object>>
+        +getAll() Result
+        +create(user) Result
+        +update(id, user) Result
+        +delete(id) Result
+    }
+    class TripRepository {
+        <<object>>
+        +getAll() Result
+        +create(trip) Result
+        +update(id, trip) Result
+        +delete(id) Result
     }
     class ScraperRepository {
         <<object>>
@@ -670,25 +817,73 @@ classDiagram
     }
     class DataGenerator {
         <<object>>
-        +generateUser() User
-        +generateTrip() Trip
-        +generateStop() Stop
+        +generateUser(from, to) User
+        +generateStop(cities, dayNumber) Stop
+        +generateTrip(...) Trip
+        +generateRandomDateTime(from, to) LocalDateTime
+    }
+    class GooglePlacesApi {
+        +search(query)
+        +searchAsString(query) String
+        +getPlaceDetails(placeId) String
+    }
+    class MestniScraperji {
+        <<funkcije mainScraper.kt>>
+        +scrapeMaribor() List~Event~
+        +scrapeLjubljana() List~Event~
+        +scrapeKranj() List~Event~
+        +scrapeKoper() List~Event~
+        +scrapePostojna() List~Event~
+        +scrapeMurskaSobota() List~Event~
+    }
+    class WikipediaScraper {
+        <<funkcije>>
+        +scrapeCityDescriptionAsObject(slug) CityDescription
     }
     class KtorServer {
+        <<Application.kt port 8080>>
         +getCity(slug) Json
         +getPlaces(query) Json
+        +getPlaceDetails(id) Json
         +getEvents(city) Json
     }
+    class EnvReader {
+        <<object>>
+        +getGooglePlaces() String
+        +getAuthEmail() String
+        +getAuthPassword() String
+    }
+    class Screen {
+        <<sealed class>>
+        Users
+        Trips
+        Scraped
+        Generator
+    }
 
-    Trip "1" *-- "*" Stop
+    Trip "1" *-- "0..*" Stop : stops
     Trip "1" *-- "1" ActiveSession
-    Stop "1" *-- "1" GeoPoint
+    Trip "1" o-- "0..1" OwnerSummary : owner
+    Stop "1" *-- "1" GeoPoint : location
+    UserRepository ..> ApiService : REST do backenda
+    TripRepository ..> ApiService
     ScraperRepository ..> ApiService
+    UserRepository ..> User
+    TripRepository ..> Trip
     ScraperRepository ..> Event
     ScraperRepository ..> CityDescription
-    KtorServer ..> GooglePlacesApi
-    DataGenerator ..> Trip
-    DataGenerator ..> User
+    ApiService ..> EnvReader : poverilnice
+    GooglePlacesApi ..> EnvReader : API ključ
+    KtorServer ..> GooglePlacesApi : /places
+    KtorServer ..> MestniScraperji : /events
+    KtorServer ..> WikipediaScraper : /city
+    MestniScraperji ..> Event : ustvarja
+    DataGenerator ..> User : faker
+    DataGenerator ..> Trip : faker
+    Screen ..> UserRepository : Users zaslon
+    Screen ..> TripRepository : Trips zaslon
+    Screen ..> ScraperRepository : Scraper zaslon
+    Screen ..> DataGenerator : Generator zaslon
 ```
 
 ---
@@ -707,10 +902,10 @@ Faze DevOps metodologije in pripadajoče akcije:
 
 | Faza DevOps | Orodje / akcija v projektu |
 |---|---|
-| **Plan** | GitHub Issues / veje (`development`, `dev`, `feature/*`) |
-| **Code** | trije repozitoriji v org. DropInSlovenia |
+| **Plan** | Jira (projekt SCRUM, epici + sprinti), veje (`development`, `dev`, `feature/*`) |
+| **Code** | trije repozitoriji v org. DropInSlovenia, integracija GitHub ↔ Jira |
 | **Build** | `docker/build-push-action` (Dockerfile za vsako komponento) |
-| **Test** | GitHub Actions: `node --test` (backend), `vitest` + ESLint (frontend) |
+| **Test** | GitHub Actions: `node --test` (backend), ESLint + `vitest` (frontend) |
 | **Release** | objava slike na **Docker Hub** (`dropinslovenia_frontend`, `_backend`, `_kotlin-server`, tag `:latest`) |
 | **Deploy** | **Webhook** (`distributhor/workflow-webhook`) → `webhook` (adnanh, Go) na **VM:9000** → `deploy.sh` |
 | **Operate** | `webhook.service` (systemd, `Restart=always`), Docker `--restart unless-stopped`, log v `/var/log/deploy.log` |
@@ -723,7 +918,7 @@ Velja za **push na `development`/`dev`** in **pull request** proti `development`
 flowchart TD
     A["Razvijalec: git push<br/>(veja development / dev)"] --> B{"GitHub Actions<br/>test workflow"}
     B --> C["actions/checkout"]
-    C --> D["setup-node@v4 (Node 22) + cache npm"]
+    C --> D["setup-node (Node 22) + cache npm"]
     D --> E["npm ci"]
     E --> F{"Zaženi teste"}
     F -->|Backend| G["node --test → junit.xml"]
@@ -749,11 +944,11 @@ flowchart TD
     B --> C["actions/checkout"]
     C --> D["docker/login-action<br/>(Docker Hub: secrets DOCKERHUB_*)"]
     D --> E["docker/build-push-action<br/>build + push :latest"]
-    E --> F["Job: notify-server (needs build)"]
+    E --> F["Job: notify-server (needs build-and-push)"]
     F --> G["distributhor/workflow-webhook<br/>POST http://VM_HOST:9000/hooks/deploy-backend<br/>+ WEBHOOK_SECRET"]
-    G --> H{"webhook na VM<br/>preveri secret"}
-    H -->|veljaven| I["docker pull novejše slike"]
-    I --> J["docker compose up -d<br/>(restart kontejnerja)"]
+    G --> H{"webhook na VM<br/>preveri HMAC podpis"}
+    H -->|veljaven| I["deploy.sh: docker pull novejše slike"]
+    I --> J["docker run -d --restart unless-stopped<br/>(zamenjava kontejnerja)"]
     J --> K["✅ Nova različica v produkciji"]
     H -->|neveljaven| L["❌ Zavrnjeno"]
 ```
@@ -772,7 +967,7 @@ flowchart TD
 - **Skrivnosti:** `.env` (Mongo URI, JWT skrivnosti) se v kontejner naloži prek `--env-file`,
   nikoli ni zapisan v skripti ali logih.
 
-> **🔧 DOPOLNI / ZNANE LUKNJE (iz P3):** secret je trenutno v `hooks.json` v čistopisu, webhook
+> **Znane luknje (iz P3):** secret je trenutno v `hooks.json` v čistopisu, webhook
 > teče prek HTTP (ne HTTPS), deploy user ima dostop do `.env` in Dockerja. Priporočene
 > izboljšave (ločen `deployer` user, secret iz env spremenljivke, TLS prek nginx) so opisane
 > v poglavju 5.6.
@@ -782,7 +977,7 @@ flowchart TD
 | Komponenta | Osnova slike | Posebnosti |
 |---|---|---|
 | Backend | `node:22-alpine` | `npm ci --omit=dev`, EXPOSE 3000 |
-| Frontend | `node:22-alpine` (večstopenjski) | Next.js `standalone`, EXPOSE 3001, `NEXT_PUBLIC_API_URL` kot build-arg |
+| Frontend | `node:22-alpine` (večstopenjski; različica za docker-compose v `frontend/Dockerfile` uporablja `node:20-alpine`) | Next.js `standalone`, EXPOSE 3001, `NEXT_PUBLIC_API_URL` kot build-arg |
 | Kotlin | `gradle:8.5-jdk21` → `eclipse-temurin:21-jre-alpine` | namesti Chromium + ChromeDriver za Selenium, EXPOSE 8080 |
 
 Orkestracija: `docker-compose.yml` (tri storitve, `depends_on`, `restart: unless-stopped`).
@@ -790,8 +985,9 @@ Vrstni red zagona: `kotlin-server` → `backend` → `frontend`. Backend dobi
 `KOTLIN_SERVICE_URL=http://kotlin-server:8080`, frontend pa `API_URL=http://backend:3000`
 (komunikacija po internem Docker omrežju, ne prek `localhost`).
 
-Dejanske `build.context` poti (iz P2): `./desktopApp` (kotlin-server), `./backend`,
-`./webApp` z `dockerfile: frontend/Dockerfile`. Frontend prejme javni IP VM kot build-arg:
+`build.context` poti v `docker-compose.yml`: `./PrincipiProjekt/desktopApp`
+(kotlin-server), `./backendProjekt` (backend) in `./webApp` z
+`dockerfile: frontend/Dockerfile` (frontend). Frontend prejme javni IP VM kot build-arg:
 `NEXT_PUBLIC_API_URL=http://68.210.138.63:3000` (Next.js ga vtisne v JS bundle že ob gradnji,
 zato mora biti podan med `docker build`, ne ob zagonu).
 
@@ -799,11 +995,6 @@ zato mora biti podan med `docker build`, ne ob zagonu).
 > `docker-compose.yml` z eno centralno `.env` (vse tri storitve hkrati). V **produkciji na VM**
 > pa se vsaka storitev posodablja **neodvisno** prek CI/CD (GitHub Actions → Docker Hub →
 > webhook → `deploy.sh` zažene posamezen `docker run`), ne prek `docker compose`.
-
-<!--
-ALTERNATIVA za izris diagramov poteka (če ne uporabljate Mermaid):
-  • draw.io / Lucidchart / Excalidraw — klasičen flowchart s pravokotniki in rombi.
--->
 
 ## 4.5 Produkcijska infrastruktura in register slik
 
@@ -840,20 +1031,11 @@ ALTERNATIVA za izris diagramov poteka (če ne uporabljate Mermaid):
 
 | Komponenta | Veja sprožilca | Ogrodje | Stanje |
 |---|---|---|---|
-| Backend | `development` (+ PR v `development`/`main`) | vgrajeni `node --test` | Testni *workflow* pripravljen; **dejanskih unit testov v repozitoriju (še) ni** (kandidata: `utils/osrmToGeoJSON.js`, `utils/asyncHandler.js`) |
-| Frontend | `dev` (+ PR v `dev`/`main`) | ESLint + `vitest` (`--passWithNoTests`) | Lint in testni okvir pripravljena; **unit testov (še) ni** (kandidat: `lib/utils/tokens.ts`) |
+| Backend | `development` (+ PR v `development`/`main`) | vgrajeni `node --test` | Testni *workflow* pripravljen; dejanski unit testi so v pripravi (kandidata: `utils/osrmToGeoJSON.js`, `utils/asyncHandler.js`) |
+| Frontend | `dev` (+ PR v `dev`/`main`) | ESLint + `vitest` (`--passWithNoTests`) | Lint in testni okvir pripravljena; unit testi v pripravi (kandidat: `lib/utils/tokens.ts`) |
 | Kotlin | `dev` (+ PR) | `kotlin.test` prek `./gradlew jvmTest` | Obstaja test `composeApp/src/jvmTest/.../ComposeAppDesktopTest.kt` |
 
 Rezultati se objavijo prek `dorny/test-reporter` v zavihku **Checks** (JUnit XML).
-
-> **🔧 DOPOLNI (testi):** Backend in frontend imata pripravljen CI testni *workflow*, a v
-> repozitorijih (preverjeno na vejah `development`/`dev`/`main`) **ni dejanskih datotek z unit
-> testi** — `node --test` ne najde ničesar, `vitest` teče z `--passWithNoTests`, `jsdom` ni
-> niti med odvisnostmi. Izberi eno:
-> - **(a)** dodaj prave teste (npr. `backend/utils/osrmToGeoJSON.test.js`,
->   `frontend/lib/utils/tokens.test.ts`) in to tabelo posodobi nazaj na "kaj se testira", ali
-> - **(b)** pusti opis kot je zgoraj — pošteno pove, da je testna infrastruktura postavljena,
->   testi pa so v pripravi. Kotlin že ima delujoč `jvmTest`.
 
 ---
 ---
@@ -978,13 +1160,6 @@ sudo ufw --force enable
 - **Izolacija:** vsaka komponenta v ločenem Docker kontejnerju; `restart: unless-stopped`
   za samodejno okrevanje po napaki ali rebootu VM.
 
-<!--
-🔧 DOPOLNI (neobvezno, za še višjo oceno varnosti — če imate/dodate):
-  • Reverse proxy (Nginx/Caddy) + Let's Encrypt TLS pred Node.js (HTTPS/WSS namesto HTTP/WS).
-  • Zožitev Atlas IP allowlist na samo IP VM.
-  • Politika varnostnih kopij (Atlas backup).
--->
-
 ## 5.6 Varnost CI/CD in webhook poteka
 
 Deploy prek webhooka je posebej zaščiten, saj sproži spremembe v produkciji:
@@ -996,7 +1171,7 @@ Deploy prek webhooka je posebej zaščiten, saj sproži spremembe v produkciji:
   satisfied."* (zahteva veljaven podpis).
 - **Docker Hub Access Token** namesto gesla (omejene pravice, takojšen preklic).
 - **GitHub Secrets** za vse poverilnice (nikoli v YAML/git).
-Developer: Reload Window
+
 **Znane luknje in priporočene izboljšave (analiza iz P3):**
 
 | Luknja | Tveganje | Predlagana rešitev |
