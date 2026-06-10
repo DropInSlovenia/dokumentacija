@@ -1,11 +1,5 @@
 # DropInSlovenia — Dokumentacija programske rešitve
 
-> - Vsi diagrami so napisani v **Mermaid** DSL in se na GitHubu izrišejo samodejno.
-> - Ganttov diagram je izdelan iz **dejanskega Jira exporta** (projekt SCRUM, 141 zadev);
->   naloge so strnjene po epicih v fazni plan.
-> - Razredni diagrami so izpeljani **neposredno iz izvorne kode** — polja, metode in
->   relacije ustrezajo dejanskemu stanju repozitorijev.
-
 ---
 
 ## Kazalo
@@ -23,7 +17,7 @@
 
 <div align="center">
 
-# 🇸🇮 DropInSlovenia
+# DropInSlovenia
 
 ### Spletna aplikacija za odkrivanje, načrtovanje in vodenje izletov po Sloveniji
 
@@ -35,11 +29,11 @@
 
 ### Člani skupine
 
-| # | Ime in priimek | Vloga |
-|---|---|---|
-| 1 | **Matija Dukarić** | Vodja skupine (odda nalogo); backend (Trip API, WebSocket), MongoDB Atlas, Azure VM, docker-compose, Docker Hub, webhook/systemd, Kotlin admin (Trips, Generator) |
-| 2 | **Maj Donko** | Frontend (Next.js — auth, zemljevid, paneli, profil), Kotlin admin (Users UI), GitHub Actions frontend, Azure NSG/port forwarding, UFW |
-| 3 | **Luka Manfreda** | Kotlin scraperji + Ktor strežnik, backend (JWT, auth middleware), DSL (lexer/parser), GitHub Actions backend, deploy skripta na VM |
+| # | Ime in priimek |
+|---|---|
+| 1 | **Matija Dukarić(Vodja skupine)** |
+| 2 | **Maj Donko** |
+| 3 | **Luka Manfreda** |
 
 ### Povezave do repozitorijev
 
