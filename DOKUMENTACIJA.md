@@ -946,11 +946,3 @@ Deploy prek webhooka je posebej zaščiten, saj sproži spremembe v produkciji:
   satisfied."* (zahteva veljaven podpis).
 - **Docker Hub Access Token** namesto gesla (omejene pravice, takojšen preklic).
 - **GitHub Secrets** za vse poverilnice (nikoli v YAML/git).
-
-**Znane luknje in priporočene izboljšave (analiza iz P3):**
-
-| Luknja | Tveganje | Predlagana rešitev |
-|---|---|---|
-| Webhook prek HTTP (ne HTTPS) | MITM vidi metapodatke deployev | TLS prek nginx + Let's Encrypt (`certbot`) |
-| `WEBHOOK_SECRET` v `hooks.json` v čistopisu | viden vsem z SSH dostopom | branje iz env spremenljivke v `webhook.service` |
-| Deploy user ima dostop do `.env` in Dockerja | ob zlorabi eskalacija do skrivnosti/root | ločen `deployer` user z minimalnimi pravicami |
