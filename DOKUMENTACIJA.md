@@ -64,46 +64,55 @@ rezerviran termin brez konkretnih nalog.
 
 ```mermaid
 gantt
-    title DropInSlovenia — časovnica projekta (po Jira epicih)
+    title DropInSlovenia — časovnica projekta (2. in 3. letnik)
     dateFormat  YYYY-MM-DD
     axisFormat  %m/%y
 
-    section Namizna aplikacija — SCRUM-11
-    Viri, Google Places API, postavitev projekta :done, kt1, 2026-04-06, 2026-04-16
-    Scraperji mest (Visit*) + Wikipedia          :done, kt2, 2026-04-16, 2026-05-05
-    Admin UI + generator (Compose)               :done, kt3, 2026-05-05, 2026-05-13
-    Uskladitve z backendom                       :done, kt4, 2026-05-13, 2026-06-07
+    section Zagon projekta
+    Idejna zasnova in izbira virov (SCRUM-7)              :done, vir,   2026-03-23, 2026-04-19
+    Repozitoriji, Jira-GitHub, specifikacije (SCRUM-28)   :done, setup, 2026-04-16, 2026-05-08
 
-    section Zagon projekta — SCRUM-28
-    Repozitoriji, Jira integracija, planiranje   :done, st1, 2026-04-16, 2026-04-24
-    Začetek dokumentacije                        :done, st2, 2026-04-23, 2026-05-08
+    section Kotlin (SCRUM-11)
+    Postavitev projekta in Google Places API              :done, kt1, 2026-04-06, 2026-04-23
+    Scraperji dogodkov 6 mest in Wikipedia                :done, kt2, 2026-04-16, 2026-04-21
+    Compose Desktop admin (Users, Trips, Scraper, Generator) :done, kt3, 2026-05-05, 2026-05-13
 
-    section Backend — SCRUM-5
-    Okolje, modeli, JWT avtentikacija            :done, be1, 2026-04-23, 2026-05-01
-    Trips CRUD + Kotlin integracija              :done, be2, 2026-04-24, 2026-05-08
-    WS infrastruktura + navigacija (OSRM)        :done, be3, 2026-04-24, 2026-05-17
-    Izboljšave (GeoJSON, places, sortiranje)     :done, be4, 2026-05-14, 2026-05-30
+    section Backend (SCRUM-5)
+    Okolje, User model, JWT avtentikacija                 :done, be1, 2026-04-23, 2026-05-01
+    Trip model, CRUD in geo iskanje                       :done, be2, 2026-04-24, 2026-05-08
+    WS živo vodenje in OSRM napotki                       :done, be3, 2026-04-24, 2026-05-17
+    GeoJSON, places, popravki in izboljšave               :done, be4, 2026-05-14, 2026-05-30
 
-    section DSL — SCRUM-89
-    BNF gramatika, lexer, parser, AST            :done, dsl1, 2026-05-13, 2026-05-26
-    Interpreter, OSRM, GeoJSON izvoz, testi      :done, dsl2, 2026-05-26, 2026-05-31
+    section DSL (SCRUM-89)
+    BNF gramatika, lexer, parser, AST, pretty-printer     :done, dsl1, 2026-05-13, 2026-05-28
+    Validator, GeoJSON exporter, OSRM, testni primeri     :done, dsl2, 2026-05-26, 2026-05-31
 
-    section Infrastruktura — SCRUM-88
-    Docker, MongoDB Atlas, Azure VM (P2)         :done, inf1, 2026-05-13, 2026-05-24
-    CI-CD Docker Hub + Actions + webhook (P3)    :done, inf2, 2026-05-28, 2026-06-07
+    section Frontend (SCRUM-90)
+    Struktura, axios in JWT, auth strani, profil          :done, fe1, 2026-05-16, 2026-05-22
+    Leaflet mapa, paneli, TripEditor                      :done, fe2, 2026-05-18, 2026-05-23
+    WS klient, GPS streaming, LiveNavigation              :done, fe3, 2026-05-18, 2026-05-30
+    UX popravki, aktivni izlet, ogledi                    :done, fe4, 2026-05-22, 2026-06-07
 
-    section Spletni vmesnik — SCRUM-90
-    Struktura, axios + JWT, prijava/profil       :done, fe1, 2026-05-16, 2026-05-21
-    Zemljevid, paneli, storei                    :done, fe2, 2026-05-18, 2026-05-23
-    TripEditor + WS + živa navigacija            :done, fe3, 2026-05-18, 2026-05-30
+    section Infrastruktura in CI/CD (SCRUM-88)
+    Dockerfile-i, docker-compose, lokalni test            :done, inf1, 2026-05-13, 2026-05-24
+    Azure VM, SSH, NSG, swap, MongoDB Atlas               :done, inf2, 2026-05-13, 2026-05-24
+    Docker Hub, GitHub Actions, webhook deploy, UFW       :done, inf3, 2026-05-28, 2026-06-07
 
-    section Zaključek
-    Odprava napak (10 hroščev iz Jire)           :done,   bug, 2026-05-11, 2026-06-07
-    Dokumentacija in zagovor                     :active, doc, 2026-06-08, 2026-06-30
+    section Zaključek 2. letnika
+    Dokumentacija in zagovor                              :active, doc, 2026-06-08, 2026-06-26
 
-    section 3. letnik (plan)
-    Nadaljnji razvoj (naloge bodo določene)      :        y3,  2026-10-01, 2027-06-01
-    Končni zagovor                               :milestone, m1, 2027-06-15, 0d
+    section 3. letnik (rezervirano)
+    Naloga 1 (dopolni)                                    :t1,  2026-10-01, 21d
+    Naloga 2 (dopolni)                                    :t2,  2026-10-22, 21d
+    Naloga 3 (dopolni)                                    :t3,  2026-11-12, 21d
+    Naloga 4 (dopolni)                                    :t4,  2026-12-03, 21d
+    Naloga 5 (dopolni)                                    :t5,  2027-01-07, 21d
+    Naloga 6 (dopolni)                                    :t6,  2027-01-28, 21d
+    Naloga 7 (dopolni)                                    :t7,  2027-02-18, 21d
+    Naloga 8 (dopolni)                                    :t8,  2027-03-11, 21d
+    Naloga 9 (dopolni)                                    :t9,  2027-04-01, 21d
+    Naloga 10 (dopolni)                                   :t10, 2027-04-22, 21d
+    Zaključek projekta in končni zagovor                  :milestone, konec, 2027-06-15, 0d
 ```
 
 ---
