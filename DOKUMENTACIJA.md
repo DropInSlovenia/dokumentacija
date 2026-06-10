@@ -767,11 +767,6 @@ Dejanske `build.context` poti (iz P2): `./desktopApp` (kotlin-server), `./backen
 `NEXT_PUBLIC_API_URL=http://68.210.138.63:3000` (Next.js ga vtisne v JS bundle že ob gradnji,
 zato mora biti podan med `docker build`, ne ob zagonu).
 
-> **Opomba o dveh načinih namestitve:** za **lokalni razvoj** se uporablja en
-> `docker-compose.yml` z eno centralno `.env` (vse tri storitve hkrati). V **produkciji na VM**
-> pa se vsaka storitev posodablja **neodvisno** prek CI/CD (GitHub Actions → Docker Hub →
-> webhook → `deploy.sh` zažene posamezen `docker run`), ne prek `docker compose`.
-
 ## 4.5 Produkcijska infrastruktura in register slik
 
 **Strežnik (Azure VM, iz P2):**
