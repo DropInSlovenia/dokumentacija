@@ -907,7 +907,7 @@ sudo ufw allow 22
 sudo ufw allow 3000
 sudo ufw allow 3001
 sudo ufw allow 8080
-sudo ufw deny  9000                                   # zapri za vse
+sudo ufw allow  9000                                   # zapri za vse
 sudo ufw allow from 140.82.112.0/20  to any port 9000 # samo GitHub Actions
 sudo ufw allow from 185.199.108.0/22 to any port 9000
 sudo ufw allow from 192.30.252.0/22  to any port 9000
