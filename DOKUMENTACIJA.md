@@ -94,16 +94,8 @@ gantt
     Dokumentacija in zagovor                              :active, doc, 2026-06-08, 2026-06-26
 
     section 3. letnik (rezervirano)
-    Naloga 1 (dopolni)                                    :t1,  2026-10-01, 21d
-    Naloga 2 (dopolni)                                    :t2,  2026-10-22, 21d
-    Naloga 3 (dopolni)                                    :t3,  2026-11-12, 21d
-    Naloga 4 (dopolni)                                    :t4,  2026-12-03, 21d
-    Naloga 5 (dopolni)                                    :t5,  2027-01-07, 21d
-    Naloga 6 (dopolni)                                    :t6,  2027-01-28, 21d
-    Naloga 7 (dopolni)                                    :t7,  2027-02-18, 21d
-    Naloga 8 (dopolni)                                    :t8,  2027-03-11, 21d
-    Naloga 9 (dopolni)                                    :t9,  2027-04-01, 21d
-    Naloga 10 (dopolni)                                   :t10, 2027-04-22, 21d
+    Mobilna aplikacija, react native                                    :t1,  2026-10-01, 21d
+    Blockchain                                    :t2,  2026-10-22, 21d
     Zaključek projekta in končni zagovor                  :milestone, konec, 2027-06-15, 0d
 ```
 
