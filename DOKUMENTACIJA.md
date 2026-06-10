@@ -321,7 +321,7 @@ graph TB
 | Sloj | Protokol | Uporaba |
 |---|---|---|
 | Aplikacijski | **HTTP/1.1** (REST, JSON) | brskalnik/desktop ↔ backend ↔ Kotlin/zunanji viri |
-| Aplikacijski | **WebSocket** (`ws://…/live`) | živo vodenje (dvosmerno, nizka latenca) |
+| Aplikacijski | **WebSocket** (`ws://…/live`) | živo vodenje (dvosmerno) |
 | Aplikacijski | **HTTPS / TLS** | klici Google Places, Wikipedia, OSRM, Atlas |
 | Aplikacijski | **MongoDB wire protocol** (prek TLS, `mongodb+srv`) | backend ↔ baza |
 | Transportni | **TCP** | vsi zgornji |
@@ -748,11 +748,6 @@ flowchart TD
   Vsak korak se beleži v `/var/log/deploy.log` z datumom in uro.
 - **Skrivnosti:** `.env` (Mongo URI, JWT skrivnosti) se v kontejner naloži prek `--env-file`,
   nikoli ni zapisan v skripti ali logih.
-
-> **Znane omejitve (analiza v P3):** secret je trenutno v `hooks.json` v čistopisu, webhook
-> teče prek HTTP (ne HTTPS), deploy user ima dostop do `.env` in Dockerja. Priporočene
-> izboljšave (ločen `deployer` user, secret iz env spremenljivke, TLS prek nginx) so opisane
-> v poglavju 5.6.
 
 ## 4.4 Kontejnerizacija
 
