@@ -143,20 +143,11 @@ $$
 a = \sin^2\!\left(\frac{\varphi_2 - \varphi_1}{2}\right) + \cos\varphi_1 \cdot \cos\varphi_2 \cdot \sin^2\!\left(\frac{\lambda_2 - \lambda_1}{2}\right)
 $$
 
-$$
-d = 2R \cdot \operatorname{atan2}\!\left(\sqrt{a},\ \sqrt{1-a}\right)
-$$
-
-kjer je $R = 6\,371\,000\ \text{m}$ (polmer Zemlje), $\varphi$ geografska širina in
-$\lambda$ geografska dolžina (v radianih).
-
 Z njo backend razvršča točke interesa po oddaljenosti od uporabnika (UC-2) in med
 živo sejo izvaja **filter premika** (`min_moved` v `backend/sockets/wsHandlers.js`):
 če se je uporabnik med dvema GPS popravkoma premaknil za manj kot `minMovedM` metrov,
 se nova Overpass poizvedba ne sproži. Ostala geoprostorska izračuna prepuščamo
-specializiranim orodjem: iskanje potovanj v bližini reši MongoDB operator `$near` nad
-`2dsphere` indeksom (privzeti radij 50 km), najkrajšo pot in ETA do naslednje postaje
-pa OSRM; pri ETA nad 30 minut sistem sproži priporočilo bližnjih postankov (F14, UC-3).
+specializiranim orodjem.
 
 ## 2.2 Primeri uporabe (sekvenčni diagrami)
 
