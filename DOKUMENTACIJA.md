@@ -757,7 +757,7 @@ flowchart TD
 | Frontend | `node:22-alpine` (večstopenjski) | Next.js `standalone`, EXPOSE 3001, `NEXT_PUBLIC_API_URL` kot build-arg |
 | Kotlin | `gradle:8.5-jdk21` → `eclipse-temurin:21-jre-alpine` | namesti Chromium + ChromeDriver za Selenium, EXPOSE 8080 |
 
-Orkestracija: `docker-compose.yml` (tri storitve, `depends_on`, `restart: unless-stopped`).
+`docker-compose.yml` (tri storitve, `depends_on`, `restart: unless-stopped`).
 Vrstni red zagona: `kotlin-server` → `backend` → `frontend`. Backend dobi
 `KOTLIN_SERVICE_URL=http://kotlin-server:8080`, frontend pa `API_URL=http://backend:3000`
 (komunikacija po internem Docker omrežju, ne prek `localhost`).
